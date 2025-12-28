@@ -1,0 +1,15 @@
+[package]
+name = "montrs-test"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+authors.workspace = true
+repository.workspace = true
+
+[dependencies]
+montrs-core = { path = "../montrs-core" }
+montrs-orm = { path = "../montrs-orm" }
+serde.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+anyhow.workspace = true
