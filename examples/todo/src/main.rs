@@ -19,12 +19,17 @@ pub struct Todo {
 }
 
 impl FromRow for Todo {
-    fn from_row(row: &rusqlite::Row) -> rusqlite::Result<Self> {
+    fn from_row_sqlite(row: &rusqlite::Row) -> rusqlite::Result<Self> {
         Ok(Self {
             id: row.get(0)?,
             title: row.get(1)?,
             completed: row.get(2)?,
         })
+    }
+
+    fn from_row_postgres(_row: &tokio_postgres::Row) -> Result<Self, montrs_orm::DbError> {
+        // Skeleton for now
+        Err(montrs_orm::DbError::Query("Postgres not fully implemented in example".to_string()))
     }
 }
 
@@ -73,7 +78,7 @@ async fn main() -> anyhow::Result<()> {
     db.execute(
         "CREATE TABLE IF NOT EXISTS todos (id INTEGER PRIMARY KEY, title TEXT, completed BOOLEAN)",
         &[],
-    )?;
+    ).await?;
 
     let config = MyConfig { db };
     let env = TypedEnv {};
@@ -107,8 +112,8 @@ async fn main() -> anyhow::Result<()> {
     println!("Invalid todo check: {:?}", invalid_todo.validate());
 
     // 7. Demonstrate ORM
-    spec.config.db.execute("INSERT INTO todos (title, completed) VALUES (?, ?)", &[&"Learn MontRS", &false])?;
-    let todos: Vec<Todo> = spec.config.db.query("SELECT id, title, completed FROM todos", &[])?;
+    spec.config.db.execute("INSERT INTO todos (title, completed) VALUES (?, ?)", &[&"Learn MontRS", &false]).await?;
+    let todos: Vec<Todo> = spec.config.db.query("SELECT id, title, completed FROM todos", &[]).await?;
     println!("Todos in DB: {:?}", todos);
 
     Ok(())

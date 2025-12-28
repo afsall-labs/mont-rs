@@ -1,3 +1,7 @@
+//! montrs-core/src/signals.rs: Fine-grained reactivity system based on Signals.
+//! This module implements a thread-safe reactive runtime that tracks subscribers
+//! and notifies them when signal values change.
+
 use std::sync::Arc;
 use parking_lot::RwLock;
 use std::collections::HashSet;
@@ -8,13 +12,17 @@ use once_cell::sync::Lazy;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct SubscriberId(DefaultKey);
 
-/// The reactive runtime that tracks dependencies.
+/// The reactive runtime responsible for managing subscribers and dependency tracking.
+/// In v0.1, it provides a centralized storage for effect callbacks.
 pub struct ReactiveRuntime {
+    /// Mapping of keys to closure behaviors that run when a dependency changes.
     subscribers: RwLock<SlotMap<DefaultKey, Arc<dyn Fn() + Send + Sync>>>,
+    /// Tracks which subscribers depend on which other keys (for future graph optimization).
     dependencies: RwLock<std::collections::HashMap<DefaultKey, HashSet<DefaultKey>>>,
 }
 
 impl ReactiveRuntime {
+    /// Initializes a new reactive runtime.
     pub fn new() -> Self {
         Self {
             subscribers: RwLock::new(SlotMap::new()),
@@ -23,15 +31,20 @@ impl ReactiveRuntime {
     }
 }
 
+/// Global lazy-initialized reactive runtime instance.
 static RUNTIME: Lazy<ReactiveRuntime> = Lazy::new(ReactiveRuntime::new);
 
-/// A reactive signal that holds a value of type T.
+/// A thread-safe reactive signal that holds a value of type T.
+/// Signals are the primary atomic unit of state in MontRS.
 pub struct Signal<T> {
+    /// The actual data protected by an RwLock for thread-safe access.
     value: Arc<RwLock<T>>,
+    /// A set of subscriber keys that are notified when this signal changes.
     subscribers: Arc<RwLock<HashSet<DefaultKey>>>,
 }
 
 impl<T: Send + Sync + 'static> Signal<T> {
+    /// Creates a new Signal with an initial value.
     pub fn new(val: T) -> Self {
         Self {
             value: Arc::new(RwLock::new(val)),
@@ -39,12 +52,14 @@ impl<T: Send + Sync + 'static> Signal<T> {
         }
     }
 
+    /// Returns a clone of the current value.
+    /// In future versions, this will automatically register the current reactive scope as a dependency.
     pub fn get(&self) -> T 
     where T: Clone {
-        // Register current effect as a subscriber (Simplified for v0.1)
         self.value.read().clone()
     }
 
+    /// Updates the signal's value and notifies all subscribers.
     pub fn set(&self, val: T) {
         {
             let mut writer = self.value.write();
@@ -53,6 +68,7 @@ impl<T: Send + Sync + 'static> Signal<T> {
         self.notify();
     }
 
+    /// Mutates the signal's value in-place via a closure and notifies subscribers.
     pub fn mutate<F: FnOnce(&mut T)>(&self, f: F) {
         {
             let mut writer = self.value.write();
@@ -61,6 +77,7 @@ impl<T: Send + Sync + 'static> Signal<T> {
         self.notify();
     }
 
+    /// Internal helper to notify all registered subscribers of a change.
     fn notify(&self) {
         let subs = self.subscribers.read();
         for &sub_key in subs.iter() {
@@ -73,6 +90,7 @@ impl<T: Send + Sync + 'static> Signal<T> {
 }
 
 impl<T: Clone> Clone for Signal<T> {
+    /// Signals can be cheaply cloned as they use Arc internally.
     fn clone(&self) -> Self {
         Self {
             value: Arc::clone(&self.value),

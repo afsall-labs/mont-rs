@@ -15,3 +15,4 @@ async-trait = { workspace = true }
 anyhow = { workspace = true }
 rusqlite = { version = "0.31", features = ["bundled"] }
 thiserror = { workspace = true }
+tokio-postgres = "0.7"
