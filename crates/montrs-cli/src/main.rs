@@ -44,7 +44,7 @@ async fn main() -> anyhow::Result<()> {
 
 /// Core logic for provisioning a new MontRS project.
 /// Handles directory creation and template files generation.
-async fn provision_project(name: &str, template: &str) -> anyhow::Result<()> {
+async fn provision_project(name: &str, _template: &str) -> anyhow::Result<()> {
     println!("{} Creating new project: {}", style("🚀").bold(), style(name).cyan().bold());
     
     let base_path = PathBuf::from(name);
