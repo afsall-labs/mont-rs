@@ -2,11 +2,11 @@
 //! This crate defines the DbBackend trait and provides implementations for
 //! SQLite and PostgreSQL, enabling unified database access.
 
+use async_trait::async_trait;
+use deadpool_postgres::{Config, Pool, Runtime};
 use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
 use thiserror::Error;
-use async_trait::async_trait;
-use deadpool_postgres::{Pool, Config, Runtime};
 use tokio_postgres::NoTls;
 
 /// Errors that can occur during database operations.
@@ -29,16 +29,24 @@ pub trait ToSql: Send + Sync {
 
 // Implementations for common types to be used as query parameters.
 impl ToSql for String {
-    fn as_rusqlite(&self) -> &dyn rusqlite::ToSql { self }
+    fn as_rusqlite(&self) -> &dyn rusqlite::ToSql {
+        self
+    }
 }
 impl ToSql for i32 {
-    fn as_rusqlite(&self) -> &dyn rusqlite::ToSql { self }
+    fn as_rusqlite(&self) -> &dyn rusqlite::ToSql {
+        self
+    }
 }
 impl ToSql for bool {
-    fn as_rusqlite(&self) -> &dyn rusqlite::ToSql { self }
+    fn as_rusqlite(&self) -> &dyn rusqlite::ToSql {
+        self
+    }
 }
 impl ToSql for &str {
-    fn as_rusqlite(&self) -> &dyn rusqlite::ToSql { self }
+    fn as_rusqlite(&self) -> &dyn rusqlite::ToSql {
+        self
+    }
 }
 
 /// Trait for mapping database rows to Rust types.
@@ -73,7 +81,8 @@ impl SqliteBackend {
             Connection::open_in_memory()
         } else {
             Connection::open(path)
-        }.map_err(|e| DbError::Connection(e.to_string()))?;
+        }
+        .map_err(|e| DbError::Connection(e.to_string()))?;
 
         Ok(Self {
             conn: Arc::new(Mutex::new(conn)),
@@ -86,16 +95,23 @@ impl DbBackend for SqliteBackend {
     async fn execute(&self, sql: &str, params: &[&dyn ToSql]) -> Result<usize, DbError> {
         let conn = self.conn.lock().unwrap();
         // Convert unified params to rusqlite-compatible params.
-        let sqlite_params: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_rusqlite()).collect();
+        let sqlite_params: Vec<&dyn rusqlite::ToSql> =
+            params.iter().map(|p| p.as_rusqlite()).collect();
         conn.execute(sql, rusqlite::params_from_iter(sqlite_params))
             .map_err(|e| DbError::Query(e.to_string()))
     }
 
     async fn query<T: FromRow>(&self, sql: &str, params: &[&dyn ToSql]) -> Result<Vec<T>, DbError> {
         let conn = self.conn.lock().unwrap();
-        let sqlite_params: Vec<&dyn rusqlite::ToSql> = params.iter().map(|p| p.as_rusqlite()).collect();
-        let mut stmt = conn.prepare(sql).map_err(|e| DbError::Query(e.to_string()))?;
-        let rows = stmt.query_map(rusqlite::params_from_iter(sqlite_params), |row| T::from_row_sqlite(row))
+        let sqlite_params: Vec<&dyn rusqlite::ToSql> =
+            params.iter().map(|p| p.as_rusqlite()).collect();
+        let mut stmt = conn
+            .prepare(sql)
+            .map_err(|e| DbError::Query(e.to_string()))?;
+        let rows = stmt
+            .query_map(rusqlite::params_from_iter(sqlite_params), |row| {
+                T::from_row_sqlite(row)
+            })
             .map_err(|e| DbError::Query(e.to_string()))?;
 
         let mut results = Vec::new();
@@ -115,7 +131,8 @@ pub struct PostgresBackend {
 impl PostgresBackend {
     /// Creates a new PostgresBackend with the provided configuration.
     pub fn new(config: Config) -> Result<Self, DbError> {
-        let pool = config.create_pool(Some(Runtime::Tokio1), NoTls)
+        let pool = config
+            .create_pool(Some(Runtime::Tokio1), NoTls)
             .map_err(|e| DbError::Connection(e.to_string()))?;
         Ok(Self { pool })
     }
@@ -124,17 +141,31 @@ impl PostgresBackend {
 #[async_trait]
 impl DbBackend for PostgresBackend {
     async fn execute(&self, sql: &str, _params: &[&dyn ToSql]) -> Result<usize, DbError> {
-        let client = self.pool.get().await.map_err(|e| DbError::Connection(e.to_string()))?;
+        let client = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| DbError::Connection(e.to_string()))?;
         // tokio-postgres requires different params handling, implementing skeleton
-        client.execute(sql, &[])
+        client
+            .execute(sql, &[])
             .await
             .map(|n| n as usize)
             .map_err(|e| DbError::Query(e.to_string()))
     }
 
-    async fn query<T: FromRow>(&self, sql: &str, _params: &[&dyn ToSql]) -> Result<Vec<T>, DbError> {
-        let client = self.pool.get().await.map_err(|e| DbError::Connection(e.to_string()))?;
-        let rows = client.query(sql, &[])
+    async fn query<T: FromRow>(
+        &self,
+        sql: &str,
+        _params: &[&dyn ToSql],
+    ) -> Result<Vec<T>, DbError> {
+        let client = self
+            .pool
+            .get()
+            .await
+            .map_err(|e| DbError::Connection(e.to_string()))?;
+        let rows = client
+            .query(sql, &[])
             .await
             .map_err(|e| DbError::Query(e.to_string()))?;
 

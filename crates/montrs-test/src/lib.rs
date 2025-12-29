@@ -1,11 +1,11 @@
 //! montrs-test: Utilities for deterministic testing of MontRS applications.
-//! This crate provides a mockable environment and a test runtime for 
+//! This crate provides a mockable environment and a test runtime for
 //! verifying application logic in-process.
 
+use montrs_core::env::EnvError;
+use montrs_core::{AppConfig, AppSpec, EnvConfig};
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
-use montrs_core::{EnvConfig, AppSpec, AppConfig};
-use montrs_core::env::EnvError;
 
 /// A mock environment configuration provider for testing.
 /// Allows setting variables manually to simulate different environments.

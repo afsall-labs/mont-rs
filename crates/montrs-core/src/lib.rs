@@ -2,20 +2,20 @@
 //! This crate defines the Module trait, AppSpec, and the reactive Signal system.
 //! It serves as the backbone for deterministic, trait-driven application initialization.
 
-pub mod signals;
-pub mod router;
 pub mod env;
-pub mod limiter;
 pub mod features;
+pub mod limiter;
+pub mod router;
+pub mod signals;
 
+pub use env::{EnvConfig, EnvConfigExt, EnvError, FromEnv, TypedEnv};
+pub use features::{FeatureFlag, FeatureManager, Rule, Segment, UserContext};
+pub use limiter::{GovernorLimiter, Limiter};
+pub use router::{Action, ActionCtx, Loader, LoaderCtx, Router};
 pub use signals::Signal;
-pub use router::{Router, Loader, Action, LoaderCtx, ActionCtx};
-pub use env::{EnvConfig, EnvConfigExt, TypedEnv, FromEnv, EnvError};
-pub use limiter::{Limiter, GovernorLimiter};
-pub use features::{FeatureManager, UserContext, FeatureFlag, Segment, Rule};
 
-use std::error::Error;
 use async_trait::async_trait;
+use std::error::Error;
 
 /// Represents the execution target for the application.
 /// Allows for conditional logic based on where the code is running.
@@ -34,11 +34,11 @@ pub enum Target {
 pub trait Module<C: AppConfig>: Send + Sync + 'static {
     /// Unique identifier for the module.
     fn name(&self) -> &'static str;
-    
+
     /// Initialization hook called during application bootstrap.
     /// Provides access to the global configuration and environment.
     async fn init(&self, ctx: &mut ModuleContext<C>) -> Result<(), Box<dyn Error + Send + Sync>>;
-    
+
     /// Hook to register routes (loaders/actions) with the application router.
     fn register_routes(&self, _router: &mut Router<C>) {}
 }

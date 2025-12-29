@@ -2,11 +2,11 @@
 //! This application integrates signals, schema validation, and the ORM layer
 //! to build a simple but functional Todo management system.
 
-use montrs_core::{AppConfig, AppSpec, Module, ModuleContext, Router, Target, TypedEnv, Signal};
-use montrs_schema::Schema;
-use montrs_orm::{DbBackend, SqliteBackend, FromRow};
-use serde::{Deserialize, Serialize};
 use async_trait::async_trait;
+use montrs_core::{AppConfig, AppSpec, Module, ModuleContext, Router, Signal, Target, TypedEnv};
+use montrs_orm::{DbBackend, FromRow, SqliteBackend};
+use montrs_schema::Schema;
+use serde::{Deserialize, Serialize};
 
 // 1. Define the Schema for creating a Todo.
 // The #[derive(Schema)] macro generates the validate() method.
@@ -36,7 +36,9 @@ impl FromRow for Todo {
 
     fn from_row_postgres(_row: &tokio_postgres::Row) -> Result<Self, montrs_orm::DbError> {
         // Skeleton for now, Postgres integration is planned for v0.2
-        Err(montrs_orm::DbError::Query("Postgres not fully implemented in example".to_string()))
+        Err(montrs_orm::DbError::Query(
+            "Postgres not fully implemented in example".to_string(),
+        ))
     }
 }
 
@@ -70,7 +72,10 @@ impl Module<MyConfig> for TodoModule {
         "todo"
     }
 
-    async fn init(&self, _ctx: &mut ModuleContext<MyConfig>) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    async fn init(
+        &self,
+        _ctx: &mut ModuleContext<MyConfig>,
+    ) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
         println!("TodoModule initialized");
         Ok(())
     }
@@ -88,11 +93,12 @@ async fn main() -> anyhow::Result<()> {
     db.execute(
         "CREATE TABLE IF NOT EXISTS todos (id INTEGER PRIMARY KEY, title TEXT, completed BOOLEAN)",
         &[],
-    ).await?;
+    )
+    .await?;
 
     let config = MyConfig { db };
     let env = TypedEnv {};
-    
+
     // 4. Bootstrap the Application Specification (AppSpec).
     // This is the blueprint of our application.
     let spec = AppSpec::new(config, env)
@@ -118,16 +124,30 @@ async fn main() -> anyhow::Result<()> {
 
     // 6. Demonstrate Schema Validation.
     // The generated validate() method checks our min_len constraint.
-    let valid_todo = CreateTodo { title: "Buy milk".to_string() };
-    let invalid_todo = CreateTodo { title: "a".to_string() };
+    let valid_todo = CreateTodo {
+        title: "Buy milk".to_string(),
+    };
+    let invalid_todo = CreateTodo {
+        title: "a".to_string(),
+    };
 
     println!("Valid todo check: {:?}", valid_todo.validate());
     println!("Invalid todo check: {:?}", invalid_todo.validate());
 
     // 7. Demonstrate ORM operations.
     // We can execute SQL and query typed results directly from our config's database backend.
-    spec.config.db.execute("INSERT INTO todos (title, completed) VALUES (?, ?)", &[&"Learn MontRS", &false]).await?;
-    let todos: Vec<Todo> = spec.config.db.query("SELECT id, title, completed FROM todos", &[]).await?;
+    spec.config
+        .db
+        .execute(
+            "INSERT INTO todos (title, completed) VALUES (?, ?)",
+            &[&"Learn MontRS", &false],
+        )
+        .await?;
+    let todos: Vec<Todo> = spec
+        .config
+        .db
+        .query("SELECT id, title, completed FROM todos", &[])
+        .await?;
     println!("Todos in DB: {:?}", todos);
 
     Ok(())

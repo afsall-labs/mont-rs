@@ -3,10 +3,10 @@
 //! architecture and integration with common developer tools.
 
 use clap::{Parser, Subcommand};
-use std::fs;
-use std::path::PathBuf;
 use console::style;
 use indicatif::{ProgressBar, ProgressStyle};
+use std::fs;
+use std::path::PathBuf;
 
 /// Command-line arguments for the CLI tool.
 #[derive(Parser)]
@@ -45,8 +45,12 @@ async fn main() -> anyhow::Result<()> {
 /// Core logic for provisioning a new MontRS project.
 /// Handles directory creation and template files generation.
 async fn provision_project(name: &str, _template: &str) -> anyhow::Result<()> {
-    println!("{} Creating new project: {}", style("🚀").bold(), style(name).cyan().bold());
-    
+    println!(
+        "{} Creating new project: {}",
+        style("🚀").bold(),
+        style(name).cyan().bold()
+    );
+
     let base_path = PathBuf::from(name);
     if base_path.exists() {
         return Err(anyhow::anyhow!("Directory {} already exists", name));
@@ -54,9 +58,13 @@ async fn provision_project(name: &str, _template: &str) -> anyhow::Result<()> {
 
     // Set up a progress bar for visual feedback during project creation.
     let pb = ProgressBar::new(4);
-    pb.set_style(ProgressStyle::default_bar()
-        .template("{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} {msg}")?
-        .progress_chars("#>-"));
+    pb.set_style(
+        ProgressStyle::default_bar()
+            .template(
+                "{spinner:.green} [{elapsed_precise}] [{bar:40.cyan/blue}] {pos}/{len} {msg}",
+            )?
+            .progress_chars("#>-"),
+    );
 
     // 1. Initialize the directory structure (workspace-first).
     pb.set_message("Creating directory structure...");
@@ -67,14 +75,16 @@ async fn provision_project(name: &str, _template: &str) -> anyhow::Result<()> {
 
     // 2. Write the root workspace Cargo.toml.
     pb.set_message("Writing workspace config...");
-    let cargo_toml = format!(r#"[workspace]
+    let cargo_toml = format!(
+        r#"[workspace]
 resolver = "2"
 members = ["app", "crates/*"]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2024"
-"#);
+"#
+    );
     fs::write(base_path.join("Cargo.toml"), cargo_toml)?;
     pb.inc(1);
 
@@ -89,7 +99,10 @@ edition = "2024"
 montrs-core = { git = "https://github.com/afsall-labs/mont-rs.git" }
 "#;
     fs::write(base_path.join("app/Cargo.toml"), app_cargo)?;
-    fs::write(base_path.join("app/src/main.rs"), "fn main() { println!(\"Hello, MontRS!\"); }")?;
+    fs::write(
+        base_path.join("app/src/main.rs"),
+        "fn main() { println!(\"Hello, MontRS!\"); }",
+    )?;
     pb.inc(1);
 
     // 4. Add developer ergonomics (Makefiles, Trunk, etc.).
@@ -131,7 +144,11 @@ Cargo.lock
     pb.inc(1);
     pb.finish_with_message("Done!");
 
-    println!("\n{} Project {} created successfully!", style("✨").green().bold(), style(name).cyan().bold());
+    println!(
+        "\n{} Project {} created successfully!",
+        style("✨").green().bold(),
+        style(name).cyan().bold()
+    );
     println!("Next steps:\n  cd {}\n  cargo run -p app", name);
 
     Ok(())

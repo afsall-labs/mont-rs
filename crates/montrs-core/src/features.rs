@@ -2,7 +2,7 @@
 //! This module allows for runtime feature toggling and segment-based
 //! targeting to support A/B testing and phased rollouts.
 
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
 /// Configuration for an individual feature flag.

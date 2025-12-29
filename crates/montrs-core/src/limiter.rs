@@ -2,9 +2,9 @@
 //! This module provides a generic Limiter trait and a concrete implementation
 //! using the governor crate for sophisticated rate limiting strategies.
 
-use governor::{Quota, RateLimiter, state::InMemoryState, state::NotKeyed, clock::DefaultClock};
-use std::num::NonZeroU32;
+use governor::{Quota, RateLimiter, clock::DefaultClock, state::InMemoryState, state::NotKeyed};
 use nonzero_ext::nonzero;
+use std::num::NonZeroU32;
 
 /// Trait for components that can perform rate limiting checks.
 pub trait Limiter: Send + Sync + 'static {
