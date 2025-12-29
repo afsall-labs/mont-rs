@@ -5,7 +5,7 @@
 use std::collections::HashMap;
 use std::sync::{Arc, RwLock};
 use montrs_core::{EnvConfig, AppSpec, AppConfig};
-use montrs_core::env::{FromEnv, EnvError};
+use montrs_core::env::EnvError;
 
 /// A mock environment configuration provider for testing.
 /// Allows setting variables manually to simulate different environments.
