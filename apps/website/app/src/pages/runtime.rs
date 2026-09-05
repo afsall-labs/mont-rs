@@ -48,12 +48,36 @@ rt.run(script)?;
 #[component]
 pub fn Runtime() -> impl IntoView {
     let ops = [
-        (Glyph::Terminal, "Ops", "Deno-inspired op registration — typed, async, cancellable."),
-        (Glyph::MemoryStick, "Memory", "Memory-optimized execution with ROM and resource tables."),
-        (Glyph::Workflow, "Event Loop", "A single-threaded event loop with deterministic scheduling."),
-        (Glyph::ShieldCheck, "Permissions", "Per-op permission gates with a typed capability model."),
-        (Glyph::Cpu, "Ext", "console, crypto, fs, http, net, os, process, and web extensions."),
-        (Glyph::CodeXml, "Modules", "Module graphs, code caching, and hot script reloading."),
+        (
+            Glyph::Terminal,
+            "Ops",
+            "Deno-inspired op registration — typed, async, cancellable.",
+        ),
+        (
+            Glyph::MemoryStick,
+            "Memory",
+            "Memory-optimized execution with ROM and resource tables.",
+        ),
+        (
+            Glyph::Workflow,
+            "Event Loop",
+            "A single-threaded event loop with deterministic scheduling.",
+        ),
+        (
+            Glyph::ShieldCheck,
+            "Permissions",
+            "Per-op permission gates with a typed capability model.",
+        ),
+        (
+            Glyph::Cpu,
+            "Ext",
+            "console, crypto, fs, http, net, os, process, and web extensions.",
+        ),
+        (
+            Glyph::CodeXml,
+            "Modules",
+            "Module graphs, code caching, and hot script reloading.",
+        ),
     ];
 
     view! {

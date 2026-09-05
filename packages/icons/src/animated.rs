@@ -63,7 +63,8 @@ pub fn AnimatedIcon(
     #[prop(into, optional)] stroke: Option<TextProp>,
     #[prop(into, optional)] stroke_width: Option<TextProp>,
     /// Override the auto-detected animation profile (`None` = auto).
-    #[prop(into, optional)] profile: Signal<Option<AnimationProfile>>,
+    #[prop(into, optional)]
+    profile: Signal<Option<AnimationProfile>>,
 ) -> impl IntoView {
     let profile = Memo::new(move |_| {
         profile

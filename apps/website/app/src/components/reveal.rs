@@ -69,7 +69,8 @@ pub fn RevealOnScroll() -> impl IntoView {
                             }
                         }
                     },
-                ) as Box<dyn FnMut(js_sys::Array)>)
+                )
+                    as Box<dyn FnMut(js_sys::Array)>)
             };
 
             let observer = web_sys::IntersectionObserver::new(
@@ -82,10 +83,9 @@ pub fn RevealOnScroll() -> impl IntoView {
 
             if let Ok(elements) = document.query_selector_all(".reveal") {
                 for i in 0..elements.length() {
-                    if let Some(el) = elements
-                        .item(i)
-                        .and_then(|node| node.dyn_into::<web_sys::Element>().ok())
-                    {
+                    if let Some(el) = elements.item(i).and_then(|node| {
+                        node.dyn_into::<web_sys::Element>().ok()
+                    }) {
                         observer.observe(&el);
                     }
                 }

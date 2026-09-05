@@ -56,12 +56,14 @@ pub fn Orm() -> impl IntoView {
         (
             Glyph::Terminal,
             "SQL-first",
-            "Write real SQL with typed rows. No magic query builders hiding your data access.",
+            "Write real SQL with typed rows. No magic query builders hiding \
+             your data access.",
         ),
         (
             Glyph::Table2,
             "Backend-agnostic",
-            "Postgres, SQLite, and any backend through a single Connection trait.",
+            "Postgres, SQLite, and any backend through a single Connection \
+             trait.",
         ),
         (
             Glyph::Workflow,

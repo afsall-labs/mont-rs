@@ -343,10 +343,13 @@ fn expand_member_pattern(root: &Path, pattern: &str) -> Vec<PathBuf> {
 /// `default-members`, and `exclude` in the root `Cargo.toml`.
 fn workspace_member_dirs(root: &Path) -> Vec<PathBuf> {
     let Ok(content) = std::fs::read_to_string(root.join("Cargo.toml")) else {
-        eprintln!("[montrs-metadata] workspace: read Cargo.toml FAILED at {:?}", root.join("Cargo.toml"));
+        eprintln!(
+            "[montrs-metadata] workspace: read Cargo.toml FAILED at {:?}",
+            root.join("Cargo.toml")
+        );
         return Vec::new();
     };
-        let Ok(value) = toml::from_str::<toml::Value>(&content) else {
+    let Ok(value) = toml::from_str::<toml::Value>(&content) else {
         return Vec::new();
     };
     let Some(workspace) = value.get("workspace") else {

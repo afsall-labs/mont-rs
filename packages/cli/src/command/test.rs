@@ -265,7 +265,9 @@ fn generate_junit_report(
             ));
 
             if let TestStatus::Fail = test.status {
-                xml.push_str(">\n            <failure message=\"Test failed\">");
+                xml.push_str(
+                    ">\n            <failure message=\"Test failed\">",
+                );
                 if let Some(msg) = &test.message {
                     xml.push_str(&xml_escape(msg));
                 }

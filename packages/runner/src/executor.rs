@@ -192,7 +192,8 @@ fn resolve_shell<'a>(configured: Option<&'a str>) -> (&'a str, &'static str) {
 }
 
 /// Display task results in the terminal.
-pub fn display_task_start(task: &Task, output: TaskOutput) {    match output {
+pub fn display_task_start(task: &Task, output: TaskOutput) {
+    match output {
         TaskOutput::Quiet | TaskOutput::Silent => {}
         _ => {
             let prefix = format!("[{}]", task.name);

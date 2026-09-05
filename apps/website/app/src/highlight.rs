@@ -32,10 +32,38 @@
 //! identical output during SSR and hydration.
 
 const RUST_KEYWORDS: &[&str] = &[
-    "as", "async", "await", "const", "derive", "dyn", "else", "enum", "fn",
-    "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut",
-    "pub", "return", "self", "struct", "trait", "true", "false", "type",
-    "use", "view", "view_route", "where", "while",
+    "as",
+    "async",
+    "await",
+    "const",
+    "derive",
+    "dyn",
+    "else",
+    "enum",
+    "fn",
+    "for",
+    "if",
+    "impl",
+    "in",
+    "let",
+    "loop",
+    "match",
+    "mod",
+    "move",
+    "mut",
+    "pub",
+    "return",
+    "self",
+    "struct",
+    "trait",
+    "true",
+    "false",
+    "type",
+    "use",
+    "view",
+    "view_route",
+    "where",
+    "while",
 ];
 
 /// HTML-escape a raw string.
@@ -149,7 +177,10 @@ pub fn highlight_rust(source: &str) -> String {
             let escaped = escape_html(&word);
             if RUST_KEYWORDS.contains(&word.as_str()) {
                 wrap("token-keyword", &escaped, &mut out);
-            } else if word.chars().next().is_some_and(|ch| ch.is_ascii_uppercase())
+            } else if word
+                .chars()
+                .next()
+                .is_some_and(|ch| ch.is_ascii_uppercase())
             {
                 wrap("token-type", &escaped, &mut out);
             } else {

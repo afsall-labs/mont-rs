@@ -34,7 +34,11 @@ use montrs_icons::*;
 use montrs_ui::prelude::*;
 
 const PACKAGES: &[(&str, &str, &str)] = &[
-    ("core", "Foundational traits — Plate, Route, AppSpec, AgentError", "Core"),
+    (
+        "core",
+        "Foundational traits — Plate, Route, AppSpec, AgentError",
+        "Core",
+    ),
     ("platform", "Target enum, PlatformAdapter trait", "Core"),
     ("metadata", "montrs.toml single source of truth", "Core"),
     ("cli", "The `montrs` command", "Core"),
@@ -46,27 +50,71 @@ const PACKAGES: &[(&str, &str, &str)] = &[
     ("runner", "Custom task runner config", "Core"),
     ("validator", "Compile-time validation (derive)", "Core"),
     ("ui", "91 shadcn-inspired components", "Experience"),
-    ("icons", "1,600+ Lucide icons as Leptos components", "Experience"),
-    ("motion", "Springs, tweens, keyframes, gestures", "Experience"),
+    (
+        "icons",
+        "1,600+ Lucide icons as Leptos components",
+        "Experience",
+    ),
+    (
+        "motion",
+        "Springs, tweens, keyframes, gestures",
+        "Experience",
+    ),
     ("haptics", "Cross-platform haptic feedback", "Experience"),
     ("hotkeys-core", "Shortcut parsing/matching", "Experience"),
     ("hotkeys-web", "Browser/WASM hotkey adapter", "Experience"),
-    ("i18n", "Internationalization, plurals, scoping", "Experience"),
-    ("table-core", "Headless table state + row models", "Experience"),
+    (
+        "i18n",
+        "Internationalization, plurals, scoping",
+        "Experience",
+    ),
+    (
+        "table-core",
+        "Headless table state + row models",
+        "Experience",
+    ),
     ("image-core", "Validated image request specs", "Experience"),
-    ("image-optimizer", "Bounded image optimization policy", "Experience"),
-    ("orm", "SQL-first, backend-agnostic DB abstraction", "Full-stack"),
-    ("auth", "Email/password, OAuth, 2FA, sessions, RBAC", "Full-stack"),
-    ("services", "Service supervisor (daemon, retries, cron)", "Full-stack"),
+    (
+        "image-optimizer",
+        "Bounded image optimization policy",
+        "Experience",
+    ),
+    (
+        "orm",
+        "SQL-first, backend-agnostic DB abstraction",
+        "Full-stack",
+    ),
+    (
+        "auth",
+        "Email/password, OAuth, 2FA, sessions, RBAC",
+        "Full-stack",
+    ),
+    (
+        "services",
+        "Service supervisor (daemon, retries, cron)",
+        "Full-stack",
+    ),
     ("proxy", "Reverse proxy routing", "Full-stack"),
     ("web", "Web platform adapter (WASM)", "Full-stack"),
     ("desktop", "Native desktop (wry webview)", "Full-stack"),
     ("mobile", "Mobile platform adapter", "Full-stack"),
-    ("renderer", "Renderer trait + geometry (wgpu/tiny-skia)", "Full-stack"),
-    ("runtime", "Native Rust runtime (Deno-inspired ops)", "Runtime"),
+    (
+        "renderer",
+        "Renderer trait + geometry (wgpu/tiny-skia)",
+        "Full-stack",
+    ),
+    (
+        "runtime",
+        "Native Rust runtime (Deno-inspired ops)",
+        "Runtime",
+    ),
     ("log", "Structured log store with retention", "Runtime"),
     ("env", "Env parsing + .env loading + Tera", "Runtime"),
-    ("state", "Deterministic stores, machines, history", "Runtime"),
+    (
+        "state",
+        "Deterministic stores, machines, history",
+        "Runtime",
+    ),
     ("command", "Typed command registry", "Runtime"),
     ("content", "Typed Markdown content collections", "Runtime"),
     ("test", "Deterministic TestRuntime + E2E", "Tooling"),
@@ -108,7 +156,14 @@ const TEMPLATES: &[(&str, &str)] = &[
 #[component]
 pub fn Docs() -> impl IntoView {
     let filter = RwSignal::new("All".to_string());
-    let groups = ["All", "Core", "Experience", "Full-stack", "Runtime", "Tooling"];
+    let groups = [
+        "All",
+        "Core",
+        "Experience",
+        "Full-stack",
+        "Runtime",
+        "Tooling",
+    ];
 
     let filtered = move || {
         let f = filter.get();

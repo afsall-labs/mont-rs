@@ -70,8 +70,10 @@ pub fn Icons() -> impl IntoView {
             .get("style")
             .unwrap_or_else(|| "stroke".to_string()),
     );
-    let stroke_color = RwSignal::new(query.get().get("stroke_color").unwrap_or_default());
-    let fill_color = RwSignal::new(query.get().get("fill_color").unwrap_or_default());
+    let stroke_color =
+        RwSignal::new(query.get().get("stroke_color").unwrap_or_default());
+    let fill_color =
+        RwSignal::new(query.get().get("fill_color").unwrap_or_default());
     let animated = RwSignal::new(false);
 
     let icons = Memo::new(move |_| {
@@ -116,11 +118,7 @@ pub fn Icons() -> impl IntoView {
 
     let stroke_width_val = Signal::derive(move || {
         let s = stroke_w.get();
-        if s.is_empty() {
-            "1.5".to_string()
-        } else {
-            s
-        }
+        if s.is_empty() { "1.5".to_string() } else { s }
     });
 
     // Handlers are defined at the top level (outside the view) so they can be
@@ -162,7 +160,10 @@ pub fn Icons() -> impl IntoView {
         move |e: leptos::ev::Event| {
             let val = event_target_value(&e);
             stroke_color.set(val.clone());
-            nav(&format!("/ui/icons?stroke_color={}", val), Default::default());
+            nav(
+                &format!("/ui/icons?stroke_color={}", val),
+                Default::default(),
+            );
         }
     };
     let on_fill_color = {

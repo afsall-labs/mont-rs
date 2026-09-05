@@ -220,7 +220,11 @@ impl Supervisor {
             }
             let st = inner.state_file.get_mut(&id.to_string());
             st.pid = Some(pid);
-            st.last_start = Some(OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).unwrap());
+            st.last_start = Some(
+                OffsetDateTime::now_utc()
+                    .format(&time::format_description::well_known::Rfc3339)
+                    .unwrap(),
+            );
             st.start_count += 1;
             st.was_running = true;
             let _ = inner.state_file.save();
@@ -351,7 +355,11 @@ impl Supervisor {
 
         let st = inner.state_file.get_mut(&id.to_string());
         st.pid = None;
-        st.last_stop = Some(OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).unwrap());
+        st.last_stop = Some(
+            OffsetDateTime::now_utc()
+                .format(&time::format_description::well_known::Rfc3339)
+                .unwrap(),
+        );
         st.was_running = false;
         let _ = inner.state_file.save();
 

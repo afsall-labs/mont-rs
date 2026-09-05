@@ -142,8 +142,21 @@ impl TextPipeline {
 
     pub fn set_viewport(&mut self, _width: u32, _height: u32) {}
 
-    pub fn flush(&mut self, _device: &(), _queue: &(), _encoder: &mut (), _view: &()) {
+    pub fn flush(
+        &mut self,
+        _device: &(),
+        _queue: &(),
+        _encoder: &mut (),
+        _view: &(),
+    ) {
     }
 
-    pub fn resize(&mut self, _device: &(), _queue: &(), _width: u32, _height: u32) {}
+    pub fn resize(
+        &mut self,
+        _device: &(),
+        _queue: &(),
+        _width: u32,
+        _height: u32,
+    ) {
+    }
 }

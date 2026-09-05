@@ -31,8 +31,10 @@
 use crate::{copy::CopyButton, highlight::highlight_rust};
 use leptos::prelude::*;
 use montrs_icons::*;
-use montrs_ui::components::{input::Input, switch::Switch};
-use montrs_ui::prelude::*;
+use montrs_ui::{
+    components::{input::Input, switch::Switch},
+    prelude::*,
+};
 
 const HELLO_SNIPPET: &str = r#"use montrs_core::*;
 
@@ -578,17 +580,20 @@ fn Philosophy() -> impl IntoView {
         (
             Glyph::Timer,
             "Deterministic",
-            "Same input, same output. In production, in tests, on every platform.",
+            "Same input, same output. In production, in tests, on every \
+             platform.",
         ),
         (
             Glyph::Puzzle,
             "Trait-driven boundaries",
-            "Features are Plates with explicit interfaces. Change behavior by implementing a trait — ORM, auth, rendering.",
+            "Features are Plates with explicit interfaces. Change behavior by \
+             implementing a trait — ORM, auth, rendering.",
         ),
         (
             Glyph::Bot,
             "Agent-first",
-            "Structured snapshots, agent.json, and skills make MontRS apps natively readable by AI agents.",
+            "Structured snapshots, agent.json, and skills make MontRS apps \
+             natively readable by AI agents.",
         ),
         (
             Glyph::WandSparkles,
@@ -598,12 +603,14 @@ fn Philosophy() -> impl IntoView {
         (
             Glyph::Braces,
             "One AppSpec",
-            "Your entire app is a serializable spec: portable, inspectable, testable.",
+            "Your entire app is a serializable spec: portable, inspectable, \
+             testable.",
         ),
         (
             Glyph::Cpu,
             "Rust end to end",
-            "Leptos reactivity, the type system, and compile-time validation catch bugs before runtime.",
+            "Leptos reactivity, the type system, and compile-time validation \
+             catch bugs before runtime.",
         ),
     ];
 
@@ -712,11 +719,36 @@ fn AgentFirst() -> impl IntoView {
 #[component]
 fn SectionLinks() -> impl IntoView {
     let sections = [
-        ("/docs", Glyph::BookOpen, "Docs", "40+ packages, templates, and the CLI"),
-        ("/auth", Glyph::KeyRound, "Auth", "OAuth, 2FA, passkeys, sessions — better-auth style"),
-        ("/runtime", Glyph::Zap, "Runtime", "Deno-inspired ops and memory-optimized execution"),
-        ("/ai", Glyph::Bot, "AI Kit", "Agentic framework, spec snapshots, skills"),
-        ("/orm", Glyph::Database, "ORM", "SQL-first, backend-agnostic data layer"),
+        (
+            "/docs",
+            Glyph::BookOpen,
+            "Docs",
+            "40+ packages, templates, and the CLI",
+        ),
+        (
+            "/auth",
+            Glyph::KeyRound,
+            "Auth",
+            "OAuth, 2FA, passkeys, sessions — better-auth style",
+        ),
+        (
+            "/runtime",
+            Glyph::Zap,
+            "Runtime",
+            "Deno-inspired ops and memory-optimized execution",
+        ),
+        (
+            "/ai",
+            Glyph::Bot,
+            "AI Kit",
+            "Agentic framework, spec snapshots, skills",
+        ),
+        (
+            "/orm",
+            Glyph::Database,
+            "ORM",
+            "SQL-first, backend-agnostic data layer",
+        ),
     ];
 
     view! {

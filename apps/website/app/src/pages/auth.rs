@@ -50,14 +50,46 @@ router.get("/protected", auth.require(Role::Admin), handler);
 #[component]
 pub fn Auth() -> impl IntoView {
     let features = [
-        (Glyph::Mail, "Email & Password", "Verification, password reset, and one-time tokens."),
-        (Glyph::Globe, "OAuth Providers", "Google, GitHub, and any generic OAuth 2.0 / OIDC provider."),
-        (Glyph::ShieldCheck, "Two-Factor", "TOTP, recovery codes, phone OTP, and 2FA challenge flows."),
-        (Glyph::KeySquare, "Passkeys", "WebAuthn passkey authentication with device authorization."),
-        (Glyph::KeyRound, "API Keys", "Scoped, rotating API keys for service-to-service auth."),
-        (Glyph::Workflow, "Sessions & SSO", "Multi-session management, SAML/SSO, and session revocation."),
-        (Glyph::Users, "Organizations & RBAC", "Teams, roles, permissions, and SCIM provisioning."),
-        (Glyph::Eye, "Zero-Trust Extras", "Device codes, magic links, captcha, and breached-password checks."),
+        (
+            Glyph::Mail,
+            "Email & Password",
+            "Verification, password reset, and one-time tokens.",
+        ),
+        (
+            Glyph::Globe,
+            "OAuth Providers",
+            "Google, GitHub, and any generic OAuth 2.0 / OIDC provider.",
+        ),
+        (
+            Glyph::ShieldCheck,
+            "Two-Factor",
+            "TOTP, recovery codes, phone OTP, and 2FA challenge flows.",
+        ),
+        (
+            Glyph::KeySquare,
+            "Passkeys",
+            "WebAuthn passkey authentication with device authorization.",
+        ),
+        (
+            Glyph::KeyRound,
+            "API Keys",
+            "Scoped, rotating API keys for service-to-service auth.",
+        ),
+        (
+            Glyph::Workflow,
+            "Sessions & SSO",
+            "Multi-session management, SAML/SSO, and session revocation.",
+        ),
+        (
+            Glyph::Users,
+            "Organizations & RBAC",
+            "Teams, roles, permissions, and SCIM provisioning.",
+        ),
+        (
+            Glyph::Eye,
+            "Zero-Trust Extras",
+            "Device codes, magic links, captcha, and breached-password checks.",
+        ),
     ];
 
     view! {

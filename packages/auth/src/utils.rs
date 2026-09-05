@@ -200,7 +200,8 @@ mod tests {
     fn test_totp_verify() {
         let secret = totp::generate_secret();
         let totp = totp::from_secret(&secret);
-        let code = totp.generate(OffsetDateTime::now_utc().unix_timestamp() as u64);
+        let code =
+            totp.generate(OffsetDateTime::now_utc().unix_timestamp() as u64);
         assert!(totp::verify_code(&secret, &code));
     }
 

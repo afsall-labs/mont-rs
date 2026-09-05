@@ -49,7 +49,8 @@ pub async fn create_verification(
         id: Uuid::new_v4().to_string(),
         identifier: identifier.into(),
         value: token,
-        expires_at: OffsetDateTime::now_utc() + Duration::seconds(expires_in_secs),
+        expires_at: OffsetDateTime::now_utc()
+            + Duration::seconds(expires_in_secs),
         created_at: OffsetDateTime::now_utc(),
     };
     db.create_verification(&record).await?;

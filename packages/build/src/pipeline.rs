@@ -84,11 +84,7 @@ impl Pipeline {
 
     /// Directory that cargo builds artifacts into for the current profile.
     fn profile_dir(&self) -> &'static str {
-        if self.release {
-            "release"
-        } else {
-            "debug"
-        }
+        if self.release { "release" } else { "debug" }
     }
 
     /// Path to the compiled SSR server binary, with `.exe` on Windows.
@@ -389,8 +385,7 @@ mod tests {
 
     #[test]
     fn frontend_args_keep_features_flag_with_value() {
-        let args =
-            frontend_build_args("website", &[], true);
+        let args = frontend_build_args("website", &[], true);
         let joined = args.join(" ");
         assert!(
             joined.contains("--features hydrate --release"),
@@ -413,7 +408,9 @@ mod tests {
         );
         let joined = args.join(" ");
         assert!(
-            joined.contains("--features hydrate,foo --no-default-features --release"),
+            joined.contains(
+                "--features hydrate,foo --no-default-features --release"
+            ),
             "unexpected frontend args: {joined}"
         );
     }
@@ -423,8 +420,7 @@ mod tests {
         let args = server_build_args("website", &[], true, false);
         let joined = args.join(" ");
         assert_eq!(
-            joined,
-            "build --package website --features ssr",
+            joined, "build --package website --features ssr",
             "unexpected server args"
         );
         let idx = args
@@ -439,8 +435,7 @@ mod tests {
         let args = server_build_args("website", &[], true, true);
         let joined = args.join(" ");
         assert_eq!(
-            joined,
-            "build --package website --features ssr --release",
+            joined, "build --package website --features ssr --release",
             "unexpected server args"
         );
         let idx = args

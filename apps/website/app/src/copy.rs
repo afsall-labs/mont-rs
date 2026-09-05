@@ -45,7 +45,8 @@ pub fn copy_text(text: &str) -> bool {
     // produce an unhandledrejection in the console.
     let mut closure = wasm_bindgen::prelude::Closure::wrap(Box::new(
         |_: wasm_bindgen::JsValue| {},
-    ) as Box<dyn FnMut(wasm_bindgen::JsValue)>);
+    )
+        as Box<dyn FnMut(wasm_bindgen::JsValue)>);
     let _ = promise.catch(&mut closure);
     true
 }
@@ -76,13 +77,15 @@ pub fn CopyButton(
         {
             use wasm_bindgen::prelude::*;
             let copied2 = copied;
-            let cb = Closure::wrap(Box::new(move || copied2.set(false))
-                as Box<dyn FnMut()>);
+            let cb = Closure::wrap(
+                Box::new(move || copied2.set(false)) as Box<dyn FnMut()>
+            );
             if let Some(window) = web_sys::window() {
-                let _ = window.set_timeout_with_callback_and_timeout_and_arguments_0(
-                    cb.as_ref().unchecked_ref(),
-                    1500,
-                );
+                let _ = window
+                    .set_timeout_with_callback_and_timeout_and_arguments_0(
+                        cb.as_ref().unchecked_ref(),
+                        1500,
+                    );
             }
             cb.forget();
         }

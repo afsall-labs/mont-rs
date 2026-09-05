@@ -28,8 +28,11 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-use crate::blocks::*;
-use crate::{copy::CopyButton, highlight::{highlight_rust, strip_license}};
+use crate::{
+    blocks::*,
+    copy::CopyButton,
+    highlight::{highlight_rust, strip_license},
+};
 use leptos::prelude::*;
 use montrs_icons::*;
 use montrs_ui::prelude::*;

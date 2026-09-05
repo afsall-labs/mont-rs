@@ -31,8 +31,7 @@
 use leptos::prelude::*;
 use montrs_icons::*;
 use montrs_motion::*;
-use montrs_ui::components::slider::Slider;
-use montrs_ui::prelude::*;
+use montrs_ui::{components::slider::Slider, prelude::*};
 
 #[component]
 pub fn Motion() -> impl IntoView {
@@ -72,9 +71,8 @@ fn SpringDemo() -> impl IntoView {
         }
         playing.set(true);
         value.set(0.0);
-        let spring =
-            Spring::new(stiffness.get(), damping.get(), mass.get())
-                .with_range(0.0, 1.0);
+        let spring = Spring::new(stiffness.get(), damping.get(), mass.get())
+            .with_range(0.0, 1.0);
         let start = FrameLoop::now();
         FrameLoop::on_frame(move || {
             let elapsed = FrameLoop::now() - start;

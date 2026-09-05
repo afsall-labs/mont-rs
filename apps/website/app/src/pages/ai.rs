@@ -38,22 +38,26 @@ pub fn AiKit() -> impl IntoView {
         (
             Glyph::Braces,
             "agent.json",
-            "The project spec: plates, routes, tools, and package invariants — machine-readable and always current.",
+            "The project spec: plates, routes, tools, and package invariants \
+             — machine-readable and always current.",
         ),
         (
             Glyph::Wrench,
             "@agent-tool",
-            "Mark any function as agent-callable. Tools are curated into tools.json automatically.",
+            "Mark any function as agent-callable. Tools are curated into \
+             tools.json automatically.",
         ),
         (
             Glyph::Blocks,
             "@agent-skill",
-            "Composable, multi-step workflows defined as skills — fix an error, add a feature, restructure.",
+            "Composable, multi-step workflows defined as skills — fix an \
+             error, add a feature, restructure.",
         ),
         (
             Glyph::FileSearch,
             "Error tracking",
-            "Versioned error captures with suggested fixes and the exact code context.",
+            "Versioned error captures with suggested fixes and the exact code \
+             context.",
         ),
         (
             Glyph::WandSparkles,
@@ -63,7 +67,8 @@ pub fn AiKit() -> impl IntoView {
         (
             Glyph::Bot,
             "MCP server",
-            "Expose the project to any MCP client: snapshots, errors, diffs, and router structure.",
+            "Expose the project to any MCP client: snapshots, errors, diffs, \
+             and router structure.",
         ),
     ];
 

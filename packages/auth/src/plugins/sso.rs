@@ -42,9 +42,9 @@ use axum::{
     extract::State,
     routing::{get, post},
 };
-use time::OffsetDateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use time::OffsetDateTime;
 
 /// An SSO identity provider configuration.
 #[derive(Debug, Clone, Serialize, Deserialize)]

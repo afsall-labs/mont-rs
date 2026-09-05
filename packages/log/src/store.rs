@@ -164,7 +164,9 @@ impl LogStore {
         let seq = inner.seqs.entry(service.to_string()).or_insert(0);
         *seq += 1;
 
-        let ts = OffsetDateTime::now_utc().format(&time::format_description::well_known::Rfc3339).unwrap();
+        let ts = OffsetDateTime::now_utc()
+            .format(&time::format_description::well_known::Rfc3339)
+            .unwrap();
         let file = inner.log_file(service).unwrap_or_else(|_| {
             inner.config.root.join(format!("{service}.log"))
         });

@@ -39,28 +39,32 @@ pub fn Ui() -> impl IntoView {
             "/ui/components",
             Glyph::Blocks,
             "Components",
-            "91 shadcn-inspired components built on Tailwind CSS. Buttons, cards, inputs, tabs, and more — copy the source, own every pixel.",
+            "91 shadcn-inspired components built on Tailwind CSS. Buttons, \
+             cards, inputs, tabs, and more — copy the source, own every pixel.",
             "h-40",
         ),
         (
             "/ui/blocks",
             Glyph::LayoutTemplate,
             "Blocks",
-            "Pre-built UI sections from real MontRS Plates: FAQs, footers, headers, login screens, sidenavs, integrations.",
+            "Pre-built UI sections from real MontRS Plates: FAQs, footers, \
+             headers, login screens, sidenavs, integrations.",
             "h-40",
         ),
         (
             "/ui/icons",
             Glyph::Palette,
             "Icons",
-            "1,700+ Lucide icons as Leptos components, with search, sizing, stroke, and fill controls. Toggle animated hover effects.",
+            "1,700+ Lucide icons as Leptos components, with search, sizing, \
+             stroke, and fill controls. Toggle animated hover effects.",
             "h-40",
         ),
         (
             "/ui/motion",
             Glyph::Activity,
             "Motion",
-            "Spring physics, tween easings, gestures, and SVG path animation from the montrs-motion package.",
+            "Spring physics, tween easings, gestures, and SVG path animation \
+             from the montrs-motion package.",
             "h-40",
         ),
     ];

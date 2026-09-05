@@ -35,11 +35,11 @@
 
 use crate::entities::{DefaultAccount, DefaultSession, DefaultUser};
 use async_trait::async_trait;
-use time::OffsetDateTime;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
+use time::OffsetDateTime;
 
 /// A complete user record.
 #[derive(Debug, Clone)]
