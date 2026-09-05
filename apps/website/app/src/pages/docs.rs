@@ -231,7 +231,7 @@ pub fn Docs() -> impl IntoView {
                         "Start from a pre-configured workspace with one command."
                     </p>
                     <div class="mt-5 space-y-3">
-                        {TEMPLATES.into_iter().map(|(name, desc)| view! {
+                        {TEMPLATES.iter().map(|(name, desc)| view! {
                             <div class="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
                                 <div class="flex items-center gap-3">
                                     <Icon glyph=Glyph::Folder class="h-4 w-4 shrink-0 text-primary" />
@@ -252,7 +252,7 @@ pub fn Docs() -> impl IntoView {
                         "Everything you need, one binary."
                     </p>
                     <div class="mt-5 space-y-3">
-                        {CLI_COMMANDS.into_iter().map(|(cmd, desc)| view! {
+                        {CLI_COMMANDS.iter().map(|(cmd, desc)| view! {
                             <div class="flex items-center justify-between gap-3 rounded-lg border border-border bg-card p-4">
                                 <div class="flex items-center gap-3">
                                     <span class="terminal-prompt">"$"</span>

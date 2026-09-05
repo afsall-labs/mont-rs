@@ -153,13 +153,13 @@ pub fn Components() -> impl IntoView {
             <div class="grid grid-cols-1 gap-10 lg:grid-cols-[200px_1fr]">
                 <nav class="hidden lg:block">
                     <div class="sticky top-20 space-y-1 border-l border-border pl-4 text-sm">
-                        {SECTIONS.into_iter().map(|(id, label)| {
+                        {SECTIONS.iter().map(|(id, label)| {
                             let on_click = scroll_to(id);
                             view! {
                                 <a
                                     href="#"
                                     class="block rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                                    on:click=move |ev| on_click(ev)
+                                    on:click=on_click
                                 >{*label}</a>
                             }
                         }).collect::<Vec<_>>()}
