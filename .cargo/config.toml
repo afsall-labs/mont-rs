@@ -1,5 +1,5 @@
 [build]
 # Disable incremental compilation to prevent incremental cache from growing.
-# The workspace has 48 packages, making incremental artifacts extremely large.
+# The workspace has 40+ packages, making incremental artifacts extremely large.
 # Tradeoff: slightly slower rebuilds, but saves ~48+ GB of disk space.
 incremental = false
