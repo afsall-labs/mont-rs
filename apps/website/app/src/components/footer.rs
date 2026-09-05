@@ -40,7 +40,7 @@ pub fn Footer() -> impl IntoView {
                 <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
                         <div class="flex items-center gap-2 text-lg font-bold">
-                            <Icon glyph=Glyph::Blocks class="h-5 w-5 text-primary" />
+                            <img src="/logo-64.png" alt="MontRS logo" class="h-5 w-5 rounded" />
                             "MontRS"
                         </div>
                         <p class="mt-3 max-w-xs text-sm text-muted-foreground">

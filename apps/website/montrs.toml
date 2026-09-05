@@ -17,6 +17,7 @@ package = "website"
 # the SSR hydration bootstrap (`/pkg/front.js` + `/pkg/front_bg.wasm`) lines
 # up with the actual WASM bundle.
 output-name = "front"
+assets-dir = "assets"
 release = true
 
 [tasks]

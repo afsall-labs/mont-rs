@@ -73,7 +73,7 @@ pub fn Header() -> impl IntoView {
         <header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div class="page-container flex h-16 items-center justify-between">
                 <div class="flex items-center gap-6">
-                    <a
+<a
                         href="/"
                         class="flex items-center gap-2 text-lg font-bold"
                         on:click={
@@ -84,7 +84,7 @@ pub fn Header() -> impl IntoView {
                             }
                         }
                     >
-                        <Icon glyph=Glyph::Blocks class="h-6 w-6 text-primary" />
+                        <img src="/logo-64.png" alt="MontRS logo" class="h-7 w-7 rounded" />
                         "MontRS"
                     </a>
                     <nav class="hidden items-center gap-1 text-sm md:flex">
