@@ -95,7 +95,12 @@ pub fn RevealOnScroll() -> impl IntoView {
         }
     });
 
-    view! {}
+    view! {
+        // A real, hidden node: a component that renders truly *nothing*
+        // between siblings desynchronizes the SSR marker walk from hydration
+        // (SSR emits no marker for an empty view, but hydration expects one).
+        <span class="hidden" aria-hidden="true"></span>
+    }
 }
 
 #[cfg(target_arch = "wasm32")]

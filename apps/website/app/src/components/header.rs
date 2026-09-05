@@ -29,15 +29,23 @@
 // SOFTWARE.
 
 use leptos::prelude::*;
-use leptos_router::components::A;
+use montrs_core::nav::*;
 use montrs_icons::*;
 use montrs_ui::prelude::*;
+
+// NOTE: nav links use plain anchors with a `use_navigate` click handler.
+// `use_navigate` (RouterContext::navigate) updates the internal location AND
+// completes the browser-history navigation immediately — unlike `<A>`, whose
+// global anchor interception defers the URL update until the leptos
+// `<Routes>` tree resolves. Our custom RouterOutlet never resolves routes,
+// so `<A>` would stop updating the address bar entirely.
 
 #[component]
 pub fn Header() -> impl IntoView {
     let theme = use_theme();
     let theme_open = RwSignal::new(false);
     let mobile_open = RwSignal::new(false);
+    let navigate = use_navigate();
 
     let theme_icon = Memo::new(move |_| match theme.get() {
         ThemeMode::Light => Glyph::Sun,
@@ -65,16 +73,33 @@ pub fn Header() -> impl IntoView {
         <header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             <div class="page-container flex h-16 items-center justify-between">
                 <div class="flex items-center gap-6">
-                    <A href="/" attr:class="flex items-center gap-2 text-lg font-bold">
+                    <a
+                        href="/"
+                        class="flex items-center gap-2 text-lg font-bold"
+                        on:click={
+                            let nav = navigate.clone();
+                            move |ev| {
+                                ev.prevent_default();
+                                nav("/", Default::default());
+                            }
+                        }
+                    >
                         <Icon glyph=Glyph::Blocks class="h-6 w-6 text-primary" />
                         "MontRS"
-                    </A>
+                    </a>
                     <nav class="hidden items-center gap-1 text-sm md:flex">
-                        {nav_links.into_iter().map(|(href, label)| view! {
-                            <A
-                                href=href
-                                attr:class="rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
-                            >{label}</A>
+                        {nav_links.into_iter().map(|(href, label)| {
+                            let nav = navigate.clone();
+                            view! {
+                                <a
+                                    href=href
+                                    class="rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                                    on:click=move |ev| {
+                                        ev.prevent_default();
+                                        nav(href, Default::default());
+                                    }
+                                >{label}</a>
+                            }
                         }).collect::<Vec<_>>()}
                     </nav>
                 </div>
@@ -167,13 +192,18 @@ pub fn Header() -> impl IntoView {
                         ></div>
                         <div class="absolute right-0 top-12 z-50 w-44 rounded-md border border-border bg-popover p-1 shadow-lg md:hidden">
                             {nav_links.into_iter().map(|(href, label)| {
+                                let nav = navigate.clone();
                                 let close_menu = mobile_open;
                                 view! {
-                                    <A
+                                    <a
                                         href=href
-                                        attr:class="block rounded-sm px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-                                        on:click=move |_| close_menu.set(false)
-                                    >{label}</A>
+                                        class="block rounded-sm px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                        on:click=move |ev| {
+                                            ev.prevent_default();
+                                            nav(href, Default::default());
+                                            close_menu.set(false);
+                                        }
+                                    >{label}</a>
                                 }
                             }).collect::<Vec<_>>()}
                         </div>
