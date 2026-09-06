@@ -55,13 +55,24 @@ pub fn Header() -> impl IntoView {
 
     let nav_links = [
         ("/", "Home"),
-        ("/ui", "UI"),
-        ("/docs", "Docs"),
         ("/auth", "Auth"),
         ("/runtime", "Runtime"),
         ("/ai", "AI Kit"),
         ("/orm", "ORM"),
+        ("/templates", "Templates"),
+        ("/docs", "Docs"),
     ];
+
+    let ui_links = [
+        ("/ui/components", "Components"),
+        ("/ui/blocks", "Blocks"),
+        ("/ui/icons", "Icons"),
+        ("/ui/motion", "Motion"),
+        ("/ui/themes", "Themes"),
+        ("/ui/backgrounds", "Backgrounds"),
+    ];
+
+    let ui_open = RwSignal::new(false);
 
     let theme_modes = [
         ("System", ThemeMode::System, Glyph::Monitor),
@@ -88,6 +99,47 @@ pub fn Header() -> impl IntoView {
                         "MontRS"
                     </a>
                     <nav class="hidden items-center gap-1 text-sm md:flex">
+                        <div class="relative">
+                            <button
+                                type="button"
+                                class="flex items-center gap-1 rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                                on:click=move |_| ui_open.update(|o| *o = !*o)
+                                aria-haspopup="menu"
+                                aria-expanded=move || ui_open.get()
+                            >
+                                "UI"
+                                <Icon glyph=Glyph::ChevronDown class=move || {
+                                    if ui_open.get() { "h-3 w-3 transition-transform rotate-180" } else { "h-3 w-3 transition-transform" }
+                                } />
+                            </button>
+                            <div
+                                class="fixed inset-0 z-40"
+                                hidden=move || !ui_open.get()
+                                on:click=move |_| ui_open.set(false)
+                            ></div>
+                            <div
+                                class="absolute left-0 z-50 mt-1 w-40 rounded-md border border-border bg-popover p-1 shadow-lg"
+                                hidden=move || !ui_open.get()
+                                role="menu"
+                                aria-label="UI"
+                            >
+                                {ui_links.into_iter().map(|(href, label)| {
+                                    let nav = navigate.clone();
+                                    let close = ui_open;
+                                    view! {
+                                        <a
+                                            href=href
+                                            class="block rounded-sm px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                            on:click=move |ev| {
+                                                ev.prevent_default();
+                                                nav(href, Default::default());
+                                                close.set(false);
+                                            }
+                                        >{label}</a>
+                                    }
+                                }).collect::<Vec<_>>()}
+                            </div>
+                        </div>
                         {nav_links.into_iter().map(|(href, label)| {
                             let nav = navigate.clone();
                             view! {

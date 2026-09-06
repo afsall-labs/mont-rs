@@ -477,4 +477,65 @@ html {
     background-clip: text;
     color: transparent;
   }
+
+  /* Decorative background patterns (aceternity-style) */
+  .bg-grid {
+    background-image:
+      linear-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  .bg-grid-fade {
+    background-image:
+      linear-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.05) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, black 30%, transparent 75%);
+  }
+
+  .bg-dots {
+    background-image: radial-gradient(hsl(var(--foreground) / 0.09) 1px, transparent 1px);
+    background-size: 18px 18px;
+  }
+
+  .bg-dots-lg {
+    background-image: radial-gradient(hsl(var(--foreground) / 0.08) 2px, transparent 2px);
+    background-size: 32px 32px;
+  }
+
+  .bg-diagonal {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      hsl(var(--foreground) / 0.06) 0,
+      hsl(var(--foreground) / 0.06) 1px,
+      transparent 1px,
+      transparent 12px
+    );
+  }
+
+  .bg-diagonal-lines {
+    background-image: repeating-linear-gradient(
+      45deg,
+      hsl(var(--foreground) / 0.04) 0,
+      hsl(var(--foreground) / 0.04) 1px,
+      transparent 1px,
+      transparent 22px
+    );
+  }
+
+  .bg-boxes {
+    background-image:
+      linear-gradient(hsl(var(--foreground) / 0.05) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(var(--foreground) / 0.05) 1px, transparent 1px);
+    background-size: 80px 80px;
+  }
+
+  .bg-radial-glow {
+    background: radial-gradient(
+      60% 50% at 50% 0%,
+      hsl(var(--primary) / 0.12),
+      transparent 70%
+    );
+  }
 }

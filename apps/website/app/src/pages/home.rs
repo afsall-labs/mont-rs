@@ -63,6 +63,12 @@ const APPSPEC_SNIPPET: &str = r#"{
   "plates": ["auth", "tui"]
 }"#;
 
+const TASKS_SNIPPET: &str = r#"[tasks]
+fmt = { command = "cargo fmt --all", category = "Quality" }
+lint = { command = "cargo clippy --workspace -- -D warnings", category = "Quality" }
+test = { command = "cargo test --workspace", category = "Testing", depends = ["fmt", "lint"] }
+ship = { command = "montrs build", category = "Release", depends = ["test"] }"#;
+
 #[component]
 pub fn Home() -> impl IntoView {
     view! {
@@ -72,6 +78,7 @@ pub fn Home() -> impl IntoView {
         <Philosophy />
         <AgentFirst />
         <SectionLinks />
+        <TaskRunnerAndSponsors />
         <FinalCta />
     }
 }
@@ -82,7 +89,6 @@ pub fn Home() -> impl IntoView {
 
 #[component]
 fn Hero() -> impl IntoView {
-    let install_tab = RwSignal::new("cargo".to_string());
 
     view! {
         <section class="dot-grid glow-orange relative overflow-hidden">
@@ -96,7 +102,7 @@ fn Hero() -> impl IntoView {
                     </div>
 
                     <h1 class="mt-6 text-4xl font-bold tracking-tight sm:text-6xl">
-                        "The deterministic full-stack framework for "
+                        "The most comprehensive full-stack framework for "
                         <span class="text-gradient">"Rust."</span>
                     </h1>
 
@@ -124,64 +130,28 @@ fn Hero() -> impl IntoView {
                     </div>
 
                     <div class="mx-auto mt-12 max-w-xl">
-                        <div class="terminal">
-                            <div class="flex items-center justify-between">
-                                <span class="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
-                                    "Install MontRS"
-                                </span>
-                                <span class="kbd-hint">"cargo · curl"</span>
+                        <div class="code-window">
+                            <div class="code-window-bar">
+                                <span class="traffic-light traffic-light-red"></span>
+                                <span class="traffic-light traffic-light-yellow"></span>
+                                <span class="traffic-light traffic-light-green"></span>
+                                <span class="code-window-tab">"terminal"</span>
                             </div>
-                            <div class="mt-3 flex items-center justify-between gap-4">
-                                <span>
-                                    <span class="terminal-prompt">"$"</span>
-                                    {move || if install_tab.get() == "curl" {
-                                        " curl -LsSf https://montrs.com/install.sh | sh"
-                                    } else {
+                            <div class="code-window-body text-left">
+                                <div class="flex items-center justify-between gap-3">
+                                    <span>
+                                        <span class="terminal-prompt">"$"</span>
                                         " cargo install montrs-cli"
-                                    }}
-                                </span>
-                                <Show
-                                    when=move || install_tab.get() == "curl"
-                                    fallback=|| view! {
-                                        <CopyButton text="cargo install montrs-cli" label="Copy" />
-                                    }
-                                >
-                                    <CopyButton text="curl -LsSf https://montrs.com/install.sh | sh" label="Copy" />
-                                </Show>
-                            </div>
-                            <div class="mt-3 flex items-center gap-2">
-                                <button
-                                    type="button"
-                                    class=move || {
-                                        let base = "rounded-full border px-3 py-1 text-xs font-medium transition-colors";
-                                        if install_tab.get() == "cargo" {
-                                            format!("{base} border-primary bg-primary/10 text-primary")
-                                        } else {
-                                            format!("{base} border-border text-muted-foreground hover:bg-accent")
-                                        }
-                                    }
-                                    on:click=move |_| install_tab.set("cargo".to_string())
-                                >
-                                    "cargo"
-                                </button>
-                                <button
-                                    type="button"
-                                    class=move || {
-                                        let base = "rounded-full border px-3 py-1 text-xs font-medium transition-colors";
-                                        if install_tab.get() == "curl" {
-                                            format!("{base} border-primary bg-primary/10 text-primary")
-                                        } else {
-                                            format!("{base} border-border text-muted-foreground hover:bg-accent")
-                                        }
-                                    }
-                                    on:click=move |_| install_tab.set("curl".to_string())
-                                >
-                                    "curl"
-                                </button>
-                                <span class="ml-auto text-xs text-muted-foreground">
-                                    "then: "
-                                    <code class="terminal-prompt">"montrs new my-app"</code>
-                                </span>
+                                    </span>
+                                    <CopyButton text="cargo install montrs-cli" label="Copy" />
+                                </div>
+                                <div class="mt-3 flex items-center justify-between gap-3">
+                                    <span>
+                                        <span class="terminal-prompt">"$"</span>
+                                        " montrs new my-app"
+                                    </span>
+                                    <CopyButton text="montrs new my-app" label="Copy" />
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -720,10 +690,10 @@ fn AgentFirst() -> impl IntoView {
 fn SectionLinks() -> impl IntoView {
     let sections = [
         (
-            "/docs",
-            Glyph::BookOpen,
-            "Docs",
-            "40+ packages, templates, and the CLI",
+            "/ui",
+            Glyph::Blocks,
+            "UI",
+            "91 components · 16k+ icons · blocks · motion",
         ),
         (
             "/auth",
@@ -779,6 +749,56 @@ fn SectionLinks() -> impl IntoView {
 // ---------------------------------------------------------------------------
 // Final CTA
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Task runner + sponsors
+// ---------------------------------------------------------------------------
+
+#[component]
+fn TaskRunnerAndSponsors() -> impl IntoView {
+    view! {
+        <section class="border-t border-border py-20">
+            <div class="page-container">
+                <div class="grid grid-cols-1 gap-12 lg:grid-cols-2">
+                    <div>
+                        <h2 class="text-3xl font-bold tracking-tight sm:text-4xl">
+                            "One task runner. Zero setup."
+                        </h2>
+                        <p class="mt-4 text-lg leading-8 text-muted-foreground">
+                            "MontRS ships a built-in task runner configured from
+                            your <code class=\"font-mono text-foreground\">montrs.toml</code> —
+                            the same file that defines your app. No Makefiles,
+                            no package.json scripts, no extra tools."
+                        </p>
+                        <div class="code-window mt-6">
+                            <div class="code-window-bar">
+                                <span class="traffic-light traffic-light-red"></span>
+                                <span class="traffic-light traffic-light-yellow"></span>
+                                <span class="traffic-light traffic-light-green"></span>
+                                <span class="code-window-tab">"montrs.toml"</span>
+                            </div>
+                            <pre class="code-window-body text-left" inner_html=move || highlight_rust(TASKS_SNIPPET)></pre>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col justify-center">
+                        <p class="icons-sidebar-heading">"Backed by"</p>
+                        <div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
+                            {["Afsall Inc.", "OpenCode", "Leptos", "Tailwind", "shadcn", "Your org here"].iter().map(|s| view! {
+                                <div class="showcase-card flex h-20 items-center justify-center px-4 text-center font-mono text-sm text-muted-foreground">
+                                    {*s}
+                                </div>
+                            }).collect::<Vec<_>>()}
+                        </div>
+                        <p class="mt-6 text-sm text-muted-foreground">
+                            "Sponsor MontRS to keep the framework free and going."
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    }
+}
 
 #[component]
 fn FinalCta() -> impl IntoView {

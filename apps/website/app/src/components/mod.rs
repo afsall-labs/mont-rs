@@ -32,6 +32,8 @@ pub mod footer;
 pub mod header;
 pub mod layout;
 pub mod reveal;
+pub mod theme_customizer;
 
 pub use layout::*;
 pub use reveal::RevealOnScroll;
+pub use theme_customizer::ThemeCustomizer;

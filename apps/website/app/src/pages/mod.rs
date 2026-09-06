@@ -30,6 +30,7 @@
 
 pub mod ai;
 pub mod auth;
+pub mod backgrounds;
 pub mod blocks;
 pub mod components;
 pub mod docs;
@@ -39,10 +40,13 @@ pub mod icons;
 pub mod motion;
 pub mod orm;
 pub mod runtime;
+pub mod templates;
+pub mod themes;
 pub mod ui;
 
 pub use ai::AiKit;
 pub use auth::Auth;
+pub use backgrounds::Backgrounds;
 pub use blocks::Blocks;
 pub use components::Components;
 pub use docs::Docs;
@@ -52,4 +56,6 @@ pub use icons::Icons;
 pub use motion::Motion;
 pub use orm::Orm;
 pub use runtime::Runtime;
+pub use templates::Templates;
+pub use themes::Themes;
 pub use ui::Ui;
