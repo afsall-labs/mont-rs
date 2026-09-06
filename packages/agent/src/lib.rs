@@ -29,9 +29,9 @@
 // SOFTWARE.
 
 use anyhow::Result;
-use time::OffsetDateTime;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, fs, path::PathBuf};
+use time::OffsetDateTime;
 
 pub mod error_parser;
 pub mod framework;

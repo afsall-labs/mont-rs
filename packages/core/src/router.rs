@@ -486,8 +486,7 @@ pub fn RouteLink<C: AppConfig + 'static>(
         let location = leptos_router::hooks::use_location();
         move || {
             let current = location.pathname.get();
-            current == to
-                || current.starts_with(&format!("{}/", to))
+            current == to || current.starts_with(&format!("{}/", to))
         }
     };
 

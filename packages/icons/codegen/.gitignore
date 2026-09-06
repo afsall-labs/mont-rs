@@ -1,0 +1,5 @@
+# Downloaded upstream tarballs + build artifacts for the codegen tool.
+# These archives contain third-party repos (which may include JS/node files);
+# they must never be committed. Only the generated .rs tables + notices are.
+/cache/
+/target/

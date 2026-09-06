@@ -84,11 +84,7 @@ impl Pipeline {
 
     /// Directory that cargo builds artifacts into for the current profile.
     fn profile_dir(&self) -> &'static str {
-        if self.release {
-            "release"
-        } else {
-            "debug"
-        }
+        if self.release { "release" } else { "debug" }
     }
 
     /// Path to the compiled SSR server binary, with `.exe` on Windows.
@@ -270,6 +266,9 @@ impl BuildPipeline for Pipeline {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{project_name}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/favicon-180.png" />
     <link rel="stylesheet" href="/main.css" />
     <link rel="modulepreload" href="/pkg/front.js" />
     <script type="module">
@@ -389,8 +388,7 @@ mod tests {
 
     #[test]
     fn frontend_args_keep_features_flag_with_value() {
-        let args =
-            frontend_build_args("website", &[], true);
+        let args = frontend_build_args("website", &[], true);
         let joined = args.join(" ");
         assert!(
             joined.contains("--features hydrate --release"),
@@ -413,7 +411,9 @@ mod tests {
         );
         let joined = args.join(" ");
         assert!(
-            joined.contains("--features hydrate,foo --no-default-features --release"),
+            joined.contains(
+                "--features hydrate,foo --no-default-features --release"
+            ),
             "unexpected frontend args: {joined}"
         );
     }
@@ -423,8 +423,7 @@ mod tests {
         let args = server_build_args("website", &[], true, false);
         let joined = args.join(" ");
         assert_eq!(
-            joined,
-            "build --package website --features ssr",
+            joined, "build --package website --features ssr",
             "unexpected server args"
         );
         let idx = args
@@ -439,8 +438,7 @@ mod tests {
         let args = server_build_args("website", &[], true, true);
         let joined = args.join(" ");
         assert_eq!(
-            joined,
-            "build --package website --features ssr --release",
+            joined, "build --package website --features ssr --release",
             "unexpected server args"
         );
         let idx = args

@@ -41,9 +41,9 @@ use axum::{
     extract::{Query, State},
     routing::{get, post},
 };
-use time::OffsetDateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use time::OffsetDateTime;
 
 /// An MCP OAuth client.
 #[derive(Debug, Clone, Serialize, Deserialize)]

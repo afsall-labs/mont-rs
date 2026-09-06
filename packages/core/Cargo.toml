@@ -33,5 +33,12 @@ governor = "0.6"
 nonzero_ext = "0.3"
 
 [features]
-default = []
-ssr = ["dep:leptos_axum", "dep:axum", "dep:tower-http"]
+default = ["csr"]
+csr = ["leptos/csr"]
+ssr = [
+    "leptos/ssr",
+    "leptos_router/ssr",
+    "dep:leptos_axum",
+    "dep:axum",
+    "dep:tower-http",
+]

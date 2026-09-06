@@ -24,5 +24,6 @@ usvg = { version = "0.44", optional = true }
 tiny-skia = { version = "0.11", optional = true }
 
 [features]
-default = []
+default = ["csr"]
+csr = ["leptos/csr"]
 video = ["dep:resvg", "dep:usvg", "dep:tiny-skia"]

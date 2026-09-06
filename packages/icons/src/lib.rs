@@ -36,6 +36,7 @@
 //! Use the [`glyph!`] macro with the generic [`Icon`] when you need a dynamic
 //! or reactive glyph.
 
+pub mod collections;
 pub mod glyph;
 pub mod glyph_impl;
 pub mod icon;
@@ -45,7 +46,8 @@ pub mod registry;
 pub mod animated;
 
 #[cfg(feature = "animated")]
-pub use animated::AnimatedIcon;
+pub use animated::{AnimatedIcon, AnimatedSvg, AnimationProfile, animation_profile};
+pub use collections::{CollectedGlyph, Collection, CollectionInfo};
 pub use glyph::Glyph;
 pub use icon::{CustomIcon, Icon};
 pub use registry::*;

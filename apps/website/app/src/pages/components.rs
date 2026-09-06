@@ -28,70 +28,112 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
+use crate::{copy::CopyButton, highlight::highlight_rust};
 use leptos::prelude::*;
 use montrs_icons::*;
-use montrs_ui::prelude::*;
+use montrs_ui::components::{
+    accordion::{Accordion, AccordionContent, AccordionItem, AccordionTrigger},
+    badge::{Badge, BadgeSize, BadgeVariant},
+    button::{Button, ButtonSize, ButtonVariant},
+    card::{Card, CardContent, CardDescription, CardHeader, CardTitle},
+    input::Input,
+    switch::Switch,
+    tabs::{Tabs, TabsContent, TabsList, TabsTrigger},
+};
 
-montrs_ui::variants! {
-    Badge {
-        base: "inline-flex items-center font-semibold rounded-md border transition-colors w-fit",
-        variants: {
-            variant: {
-                Default: "border-transparent shadow bg-primary text-primary-foreground",
-                Secondary: "border-transparent bg-secondary text-secondary-foreground",
-                Outline: "text-foreground border-border",
-                Destructive: "border-transparent bg-destructive text-destructive-foreground",
-            },
-            size: {
-                Default: "px-2.5 py-0.5 text-xs",
-                Sm: "px-1.5 py-0.5 text-[10px]",
-                Lg: "px-3 py-1 text-sm",
-            }
-        },
-        component: {
-            element: span
-        }
-    }
-}
+const BUTTON_SNIPPET: &str = r#"use montrs_ui::components::button::{Button, ButtonVariant};
 
-montrs_ui::variants! {
-    Button {
-        base: "inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
-        variants: {
-            variant: {
-                Default: "bg-primary text-primary-foreground shadow hover:bg-primary/90",
-                Secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
-                Outline: "border border-border bg-background hover:bg-accent",
-                Ghost: "hover:bg-accent hover:text-accent-foreground",
-                Destructive: "bg-destructive text-destructive-foreground shadow hover:bg-destructive/90",
-            },
-            size: {
-                Default: "h-10 px-4 py-2",
-                Sm: "h-9 rounded-md px-3",
-                Lg: "h-11 rounded-md px-8",
-                Icon: "h-10 w-10",
-            }
-        },
-        component: {
-            element: button
-        }
-    }
-}
+<Button>Default</Button>
+<Button variant=ButtonVariant::Outline>Outline</Button>
+<Button variant=ButtonVariant::Destructive>Delete</Button>
+<Button size=ButtonSize::Sm>Small</Button>
+<Button size=ButtonSize::Icon>
+    <Icon glyph=Glyph::Search class="h-4 w-4" />
+</Button>"#;
 
-montrs_ui::variants! {
-    Card {
-        base: "rounded-lg border border-border bg-card text-card-foreground shadow-sm",
-        variants: {
-            variant: {
-                Default: "",
-                Interactive: "hover:shadow-md transition-shadow cursor-pointer",
-            },
-            size: {
-                Default: "",
+const BADGE_SNIPPET: &str = r#"use montrs_ui::components::badge::{Badge, BadgeVariant};
+
+<Badge>Default</Badge>
+<Badge variant=BadgeVariant::Secondary>Secondary</Badge>
+<Badge variant=BadgeVariant::Outline>Outline</Badge>
+<Badge variant=BadgeVariant::Destructive>Destructive</Badge>"#;
+
+const CARD_SNIPPET: &str = r#"use montrs_ui::components::card::*;
+
+<Card>
+    <CardHeader>
+        <CardTitle>"Deployments"</CardTitle>
+        <CardDescription>"Manage your live services"</CardDescription>
+    </CardHeader>
+    <CardContent>
+        "42 services running · 3 pending"
+    </CardContent>
+</Card>"#;
+
+const INPUT_SNIPPET: &str = r#"use montrs_ui::components::input::Input;
+
+let value = RwSignal::new(String::new());
+
+<Input placeholder="Search packages…" value=value />"#;
+
+const SWITCH_SNIPPET: &str = r#"use montrs_ui::components::switch::Switch;
+
+let enabled = RwSignal::new(true);
+
+<Switch checked=enabled />
+<span>{move || if enabled.get() { "On" } else { "Off" }}</span>"#;
+
+const TABS_SNIPPET: &str = r#"use montrs_ui::components::tabs::*;
+
+<Tabs default_value="preview">
+    <TabsList>
+        <TabsTrigger value="preview">"Preview"</TabsTrigger>
+        <TabsTrigger value="code">"Code"</TabsTrigger>
+    </TabsList>
+    <TabsContent value="preview">"Live preview"</TabsContent>
+    <TabsContent value="code">"Source code"</TabsContent>
+</Tabs>"#;
+
+const ACCORDION_SNIPPET: &str = r#"use montrs_ui::components::accordion::*;
+
+<Accordion>
+    <AccordionItem value="what">
+        <AccordionTrigger>"What is a Plate?"</AccordionTrigger>
+        <AccordionContent>"A feature module with explicit trait boundaries."</AccordionContent>
+    </AccordionItem>
+    <AccordionItem value="why">
+        <AccordionTrigger>"Why deterministic?"</AccordionTrigger>
+        <AccordionContent>"Same input, same output — everywhere."</AccordionContent>
+    </AccordionItem>
+</Accordion>"#;
+
+const SECTIONS: &[(&str, &str)] = &[
+    ("button", "Button"),
+    ("badge", "Badge"),
+    ("card", "Card"),
+    ("input", "Input"),
+    ("switch", "Switch"),
+    ("tabs", "Tabs"),
+    ("accordion", "Accordion"),
+];
+
+/// Smooth-scroll to an element id without touching the URL (anchor links
+/// would be swallowed by the router and bounce you to the root).
+fn scroll_to(id: &'static str) -> impl Fn(leptos::ev::MouseEvent) {
+    #[cfg(not(target_arch = "wasm32"))]
+    let _ = id;
+    move |ev: leptos::ev::MouseEvent| {
+        ev.prevent_default();
+        #[cfg(target_arch = "wasm32")]
+        {
+            use wasm_bindgen::JsCast;
+            if let Some(doc) = web_sys::window().and_then(|w| w.document())
+                && let Some(el) = doc.get_element_by_id(id)
+            {
+                if let Some(html) = el.dyn_ref::<web_sys::HtmlElement>() {
+                    let _ = html.scroll_into_view();
+                }
             }
-        },
-        component: {
-            element: div
         }
     }
 }
@@ -99,102 +141,204 @@ montrs_ui::variants! {
 #[component]
 pub fn Components() -> impl IntoView {
     view! {
-        <div class="mx-auto max-w-6xl px-6 py-12 lg:px-8">
-            <div class="mb-12">
-                <h1 class="text-3xl font-bold">"Components"</h1>
-                <p class="mt-2 text-muted-foreground">
-                    "Pre-built UI components using montrs-ui and Tailwind CSS."
+        <div class="page-container py-12">
+            <div class="mb-10">
+                <h1 class="text-3xl font-bold tracking-tight">"Components"</h1>
+                <p class="mt-2 max-w-2xl text-muted-foreground">
+                    "91 shadcn-inspired components built on montrs-ui and Tailwind CSS.
+                    Copy the source, own every pixel."
                 </p>
             </div>
 
-            <section class="mb-16">
-                <h2 class="text-2xl font-semibold mb-6">"Badge"</h2>
-                <div class="flex flex-wrap gap-4 items-center">
-                    <Badge variant=BadgeVariant::Default>"Default"</Badge>
-                    <Badge variant=BadgeVariant::Secondary>"Secondary"</Badge>
-                    <Badge variant=BadgeVariant::Outline>"Outline"</Badge>
-                    <Badge variant=BadgeVariant::Destructive>"Destructive"</Badge>
-                </div>
-                <div class="flex flex-wrap gap-4 items-center mt-4">
-                    <Badge size=BadgeSize::Sm>"Small"</Badge>
-                    <Badge>"Default"</Badge>
-                    <Badge size=BadgeSize::Lg>"Large"</Badge>
-                </div>
-            </section>
+            <div class="grid grid-cols-1 gap-10 lg:grid-cols-[200px_1fr]">
+                <nav class="hidden lg:block">
+                    <div class="sticky top-20 space-y-1 border-l border-border pl-4 text-sm">
+                        {SECTIONS.iter().map(|(id, label)| {
+                            let on_click = scroll_to(id);
+                            view! {
+                                <a
+                                    href="#"
+                                    class="block rounded-md px-3 py-1.5 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                                    on:click=on_click
+                                >{*label}</a>
+                            }
+                        }).collect::<Vec<_>>()}
+                    </div>
+                </nav>
 
-            <section class="mb-16">
-                <h2 class="text-2xl font-semibold mb-6">"Button"</h2>
-                <div class="flex flex-wrap gap-4 items-center">
-                    <Button>"Default"</Button>
-                    <Button variant=ButtonVariant::Secondary>"Secondary"</Button>
-                    <Button variant=ButtonVariant::Outline>"Outline"</Button>
-                    <Button variant=ButtonVariant::Ghost>"Ghost"</Button>
-                    <Button variant=ButtonVariant::Destructive>"Destructive"</Button>
-                </div>
-                <div class="flex flex-wrap gap-4 items-center mt-4">
-                    <Button size=ButtonSize::Sm>"Small"</Button>
-                    <Button>"Default"</Button>
-                    <Button size=ButtonSize::Lg>"Large"</Button>
-                    <Button size=ButtonSize::Icon>
-                        <Icon glyph=Glyph::Search class="w-4 h-4" />
-                    </Button>
-                </div>
-            </section>
+                <div class="min-w-0 space-y-16">
+                    <ComponentSection
+                        id="button"
+                        title="Button"
+                        description="Action triggers with variants and sizes."
+                        snippet=BUTTON_SNIPPET
+                    >
+                        <div class="flex flex-wrap items-center gap-3">
+                            <Button>"Default"</Button>
+                            <Button variant=ButtonVariant::Secondary>"Secondary"</Button>
+                            <Button variant=ButtonVariant::Outline>"Outline"</Button>
+                            <Button variant=ButtonVariant::Ghost>"Ghost"</Button>
+                            <Button variant=ButtonVariant::Destructive>"Delete"</Button>
+                        </div>
+                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                            <Button size=ButtonSize::Sm>"Small"</Button>
+                            <Button>"Default"</Button>
+                            <Button size=ButtonSize::Lg>"Large"</Button>
+                            <Button size=ButtonSize::Icon>
+                                <Icon glyph=Glyph::Search class="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </ComponentSection>
 
-            <section class="mb-16">
-                <h2 class="text-2xl font-semibold mb-6">"Card"</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <Card>
-                        <div class="p-6">
-                            <h3 class="text-lg font-semibold">"Card Title"</h3>
-                            <p class="mt-2 text-sm text-muted-foreground">
-                                "This is a default card with some content."
-                            </p>
+                    <ComponentSection
+                        id="badge"
+                        title="Badge"
+                        description="Short statuses and labels."
+                        snippet=BADGE_SNIPPET
+                    >
+                        <div class="flex flex-wrap items-center gap-3">
+                            <Badge>"Default"</Badge>
+                            <Badge variant=BadgeVariant::Secondary>"Secondary"</Badge>
+                            <Badge variant=BadgeVariant::Outline>"Outline"</Badge>
+                            <Badge variant=BadgeVariant::Destructive>"Destructive"</Badge>
                         </div>
-                    </Card>
-                    <Card variant=CardVariant::Interactive>
-                        <div class="p-6">
-                            <h3 class="text-lg font-semibold">"Interactive"</h3>
-                            <p class="mt-2 text-sm text-muted-foreground">
-                                "Hover over this card to see the shadow effect."
-                            </p>
+                        <div class="mt-4 flex flex-wrap items-center gap-3">
+                            <Badge size=BadgeSize::Sm>"Small"</Badge>
+                            <Badge>"Default"</Badge>
+                            <Badge size=BadgeSize::Lg>"Large"</Badge>
                         </div>
-                    </Card>
-                    <Card>
-                        <div class="p-6">
-                            <div class="flex items-center gap-2 mb-4">
-                                <Icon glyph=Glyph::Bell class="w-5 h-5 text-primary" />
-                                <h3 class="text-lg font-semibold">"With Icon"</h3>
-                            </div>
-                            <p class="text-sm text-muted-foreground">
-                                "Cards can include icons and other elements."
-                            </p>
-                        </div>
-                    </Card>
-                </div>
-            </section>
+                    </ComponentSection>
 
-            <section>
-                <h2 class="text-2xl font-semibold mb-6">"Icons in Components"</h2>
-                <div class="flex flex-wrap gap-4 items-center">
-                    <Button>
-                        <Icon glyph=Glyph::Plus class="mr-2 w-4 h-4" />
-                        "Add Item"
-                    </Button>
-                    <Button variant=ButtonVariant::Outline>
-                        <Icon glyph=Glyph::Settings class="mr-2 w-4 h-4" />
-                        "Settings"
-                    </Button>
-                    <Button variant=ButtonVariant::Ghost>
-                        <Icon glyph=Glyph::Trash2 class="mr-2 w-4 h-4" />
-                        "Delete"
-                    </Button>
-                    <Button variant=ButtonVariant::Destructive>
-                        <Icon glyph=Glyph::TriangleAlert class="mr-2 w-4 h-4" />
-                        "Danger"
-                    </Button>
+                    <ComponentSection
+                        id="card"
+                        title="Card"
+                        description="Contained surfaces for related content."
+                        snippet=CARD_SNIPPET
+                    >
+                        <Card class="max-w-sm">
+                            <CardHeader>
+                                <CardTitle>"Deployments"</CardTitle>
+                                <CardDescription>"Manage your live services"</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <p class="text-sm text-muted-foreground">
+                                    "42 services running · 3 pending"
+                                </p>
+                            </CardContent>
+                        </Card>
+                    </ComponentSection>
+
+                    <ComponentSection
+                        id="input"
+                        title="Input"
+                        description="Text entry with focus rings and errors."
+                        snippet=INPUT_SNIPPET
+                    >
+                        <div class="flex max-w-sm flex-col gap-3">
+                            <Input placeholder="Search packages…" />
+                            <Input placeholder="Password" input_type="password" />
+                            <Input placeholder="Invalid value" error="Must be at least 3 characters" />
+                        </div>
+                    </ComponentSection>
+
+                    <ComponentSection
+                        id="switch"
+                        title="Switch"
+                        description="Binary on/off control."
+                        snippet=SWITCH_SNIPPET
+                    >
+                        <div class="flex items-center gap-3">
+                            <Switch />
+                            <span class="text-sm text-muted-foreground">"Default (off)"</span>
+                        </div>
+                        <div class="mt-3 flex items-center gap-3">
+                            <Switch checked=RwSignal::new(true) />
+                            <span class="text-sm text-muted-foreground">"Checked"</span>
+                        </div>
+                    </ComponentSection>
+
+                    <ComponentSection
+                        id="tabs"
+                        title="Tabs"
+                        description="Switch between related panels."
+                        snippet=TABS_SNIPPET
+                    >
+                        <Tabs default_value="preview">
+                            <TabsList>
+                                <TabsTrigger value={"preview".to_string()}>"Preview"</TabsTrigger>
+                                <TabsTrigger value={"code".to_string()}>"Code"</TabsTrigger>
+                            </TabsList>
+                            <TabsContent value={"preview".to_string()}>
+                                <p class="mt-4 text-sm text-muted-foreground">"Live preview panel"</p>
+                            </TabsContent>
+                            <TabsContent value={"code".to_string()}>
+                                <p class="mt-4 text-sm text-muted-foreground">"Source code panel"</p>
+                            </TabsContent>
+                        </Tabs>
+                    </ComponentSection>
+
+                    <ComponentSection
+                        id="accordion"
+                        title="Accordion"
+                        description="Collapsible content sections."
+                        snippet=ACCORDION_SNIPPET
+                    >
+                        <Accordion class="max-w-md rounded-lg border border-border">
+                            <AccordionItem value={"what".to_string()}>
+                                <AccordionTrigger>"What is a Plate?"</AccordionTrigger>
+                                <AccordionContent>
+                                    "A feature module with explicit trait boundaries that registers its routes."
+                                </AccordionContent>
+                            </AccordionItem>
+                            <AccordionItem value={"why".to_string()}>
+                                <AccordionTrigger>"Why deterministic?"</AccordionTrigger>
+                                <AccordionContent>
+                                    "Same input, same output — in production, in tests, on every platform."
+                                </AccordionContent>
+                            </AccordionItem>
+                            <AccordionItem value={"how".to_string()}>
+                                <AccordionTrigger>"How do agents help?"</AccordionTrigger>
+                                <AccordionContent>
+                                    "Spec snapshots and skills make your codebase readable by AI coding partners."
+                                </AccordionContent>
+                            </AccordionItem>
+                        </Accordion>
+                    </ComponentSection>
                 </div>
-            </section>
+            </div>
         </div>
+    }
+}
+
+#[component]
+fn ComponentSection(
+    id: &'static str,
+    title: &'static str,
+    description: &'static str,
+    snippet: &'static str,
+    children: Children,
+) -> impl IntoView {
+    let snippet_html = highlight_rust(snippet);
+    view! {
+        <section id=id class="scroll-mt-24">
+            <h2 class="text-2xl font-bold tracking-tight">{title}</h2>
+            <p class="mt-1 text-sm text-muted-foreground">{description}</p>
+
+            <div class="mt-4 grid grid-cols-1 gap-4 xl:grid-cols-2">
+                <div class="showcase-card p-6">{children()}</div>
+                <div class="code-window">
+                    <div class="code-window-bar">
+                        <span class="traffic-light traffic-light-red"></span>
+                        <span class="traffic-light traffic-light-yellow"></span>
+                        <span class="traffic-light traffic-light-green"></span>
+                        <span class="code-window-tab">{id}.rs</span>
+                        <span class="ml-auto">
+                            <CopyButton text=snippet.to_string() label="Copy" />
+                        </span>
+                    </div>
+                    <pre class="code-window-body text-left" inner_html=snippet_html></pre>
+                </div>
+            </div>
+        </section>
     }
 }

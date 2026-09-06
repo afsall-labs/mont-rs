@@ -34,8 +34,8 @@ use crate::{
     database::{DatabaseAdapter, SessionRecord, UserRecord},
     entities::DefaultSession,
 };
-use time::OffsetDateTime;
 use std::sync::Arc;
+use time::OffsetDateTime;
 use tower_http::cors::CorsLayer;
 
 /// Manages session lifecycle.

@@ -36,9 +36,9 @@ use crate::{
     AuthError, context::AuthState, plugin::AuthPlugin, utils::generate_token,
 };
 use axum::{Json, Router, extract::State, routing::post};
-use time::OffsetDateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
+use time::OffsetDateTime;
 
 /// A device authorization request (RFC 8628).
 #[derive(Debug, Clone, Serialize, Deserialize)]

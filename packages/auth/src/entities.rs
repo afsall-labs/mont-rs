@@ -30,9 +30,9 @@
 
 //! Entity traits and default records for the auth system.
 
-use time::OffsetDateTime;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
+use time::OffsetDateTime;
 
 /// A user profile (returned to clients â€” no sensitive data).
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -225,8 +225,7 @@ impl DefaultSession {
             id: uuid::Uuid::new_v4().to_string(),
             user_id: user_id.into(),
             token: crate::utils::generate_token(),
-            expires_at: now
-                + time::Duration::seconds(expires_in_secs as i64),
+            expires_at: now + time::Duration::seconds(expires_in_secs as i64),
             created_at: now,
             ip_address: None,
             user_agent: None,

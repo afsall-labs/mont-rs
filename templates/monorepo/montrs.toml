@@ -8,6 +8,8 @@ reload-port = 3001
 tailwind-input-file = "style/main.css"
 site-root = "target/site"
 site-pkg-dir = "pkg"
+output-name = "front"
+assets-dir = "assets"
 lib-features = ["hydrate"]
 lib-default-features = false
 

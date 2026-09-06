@@ -1,0 +1,13 @@
+[package]
+name = "montrs-icons-codegen"
+version = "0.1.0"
+edition = "2021"
+description = "Fetches GitHub SVG icon tarballs and generates montrs-icons collection tables (pure Rust)"
+
+# Standalone crate — deliberately NOT part of the montrs workspace.
+[workspace]
+
+[dependencies]
+ureq = "2"
+flate2 = "1"
+tar = "0.4"

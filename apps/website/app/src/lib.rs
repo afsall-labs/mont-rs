@@ -34,6 +34,8 @@
 
 pub mod blocks;
 pub mod components;
+pub mod copy;
+pub mod highlight;
 pub mod pages;
 pub mod routes;
 
@@ -67,15 +69,59 @@ pub fn hydrate() {
     });
 }
 
+/// Full HTML document rendered by the SSR server.
+///
+/// The `<head>` carries the stylesheet and the hydration bootstrap
+/// (`HydrationScripts`), which loads `/pkg/front.js` + `/pkg/front_bg.wasm`
+/// and calls `hydrate()`. The client-side hydrate entry only renders `App`
+/// (the `<body>` content), which must match the SSR markup exactly.
+#[component]
+pub fn Shell() -> impl IntoView {
+    let leptos_options = use_context::<LeptosOptions>()
+        .expect("LeptosOptions must be provided by the SSR server");
+
+    view! {
+        <html lang="en">
+            <head>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <meta name="description" content="MontRS — the deterministic, full-stack, cross-platform framework for Rust. Web, desktop, and mobile from one AppSpec." />
+                <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+                <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+                <link rel="apple-touch-icon" href="/favicon-180.png" />
+                <link rel="stylesheet" href="/main.css" />
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />
+                <link
+                    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+                    rel="stylesheet"
+                />
+                <title>"MontRS — The deterministic full-stack framework for Rust"</title>
+                // Apply the saved/system theme before first paint so the page
+                // never flashes the wrong colors, then let ThemeProvider take
+                // over after hydration. Keys must match the provider.
+                <script>
+                    "(function(){try{var t=localStorage.getItem('montrs-theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();"
+                </script>
+                <HydrationScripts options=leptos_options />
+            </head>
+            <body>
+                <App />
+            </body>
+        </html>
+    }
+}
+
+/// The application body — shared by SSR (inside `Shell`) and client hydration.
 #[component]
 pub fn App() -> impl IntoView {
     leptos_meta::provide_meta_context();
     provide_website_context();
 
     view! {
-        <link rel="stylesheet" href="/main.css" />
         <leptos_router::components::Router>
             <ThemeProvider>
+                <RevealOnScroll />
                 <Header />
                 <main class="min-h-screen">
                     {RouterOutlet::<MyConfig>()}

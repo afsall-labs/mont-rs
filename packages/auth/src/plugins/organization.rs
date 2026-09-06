@@ -42,10 +42,10 @@ use axum::{
     extract::State,
     routing::{get, post},
 };
-use time::OffsetDateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::HashMap;
+use time::OffsetDateTime;
 
 /// An organization record.
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -489,7 +489,9 @@ async fn accept_invite(
         )
     })?;
 
-    if invite.status != "pending" || invite.expires_at <= OffsetDateTime::now_utc() {
+    if invite.status != "pending"
+        || invite.expires_at <= OffsetDateTime::now_utc()
+    {
         return Err(AuthError::new(
             crate::error::AuthErrorCode::OrganizationError,
             "Invite expired or already used",

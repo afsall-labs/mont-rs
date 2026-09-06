@@ -31,5 +31,7 @@
 pub mod footer;
 pub mod header;
 pub mod layout;
+pub mod reveal;
 
 pub use layout::*;
+pub use reveal::RevealOnScroll;

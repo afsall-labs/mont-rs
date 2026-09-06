@@ -28,18 +28,28 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-pub mod animated_icons;
+pub mod ai;
+pub mod auth;
 pub mod blocks;
 pub mod components;
+pub mod docs;
 pub mod foundations;
 pub mod home;
 pub mod icons;
 pub mod motion;
+pub mod orm;
+pub mod runtime;
+pub mod ui;
 
-pub use animated_icons::AnimatedIcons;
+pub use ai::AiKit;
+pub use auth::Auth;
 pub use blocks::Blocks;
 pub use components::Components;
+pub use docs::Docs;
 pub use foundations::Foundations;
 pub use home::Home;
 pub use icons::Icons;
 pub use motion::Motion;
+pub use orm::Orm;
+pub use runtime::Runtime;
+pub use ui::Ui;

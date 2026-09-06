@@ -110,7 +110,11 @@ async-trait = "0.1"
 anyhow = "1.0"
 tracing = "0.1"
 futures = "0.3"
-leptos = { version = "0.8", features = ["hydrate", "ssr"] }
+# leptos is mode-agnostic here; each consumer enables csr/hydrate/ssr via its
+# own [features] so feature unification can never leak `ssr` into WASM
+# hydrate/CSR builds (tachys skips event handlers when `ssr` is active, which
+# silently kills all client-side interactivity).
+leptos = "0.8"
 leptos_axum = "0.8"
 leptos_meta = "0.8"
 leptos_router = "0.8"

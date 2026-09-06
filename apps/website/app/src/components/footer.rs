@@ -29,48 +29,68 @@
 // SOFTWARE.
 
 use leptos::prelude::*;
-use montrs_icons::*;
 use montrs_ui::prelude::*;
 
 #[component]
 pub fn Footer() -> impl IntoView {
     view! {
         <footer class="border-t border-border">
-            <div class="mx-auto max-w-6xl px-6 py-12 lg:px-8">
-                <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="page-container py-14">
+                <div class="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
                     <div>
-                        <div class="flex items-center gap-2 font-bold text-lg mb-4">
-                            <Icon glyph=Glyph::Blocks class="w-5 h-5 text-primary" />
+                        <div class="flex items-center gap-2 text-lg font-bold">
+                            <img src="/logo-64.png" alt="MontRS logo" class="h-5 w-5 rounded" />
                             "MontRS"
                         </div>
-                        <p class="text-sm text-muted-foreground">
-                            "A full-stack Rust framework for humans and agents."
+                        <p class="mt-3 max-w-xs text-sm text-muted-foreground">
+                            "Describe it once. Run it everywhere."
                         </p>
                     </div>
                     <div>
-                        <h3 class="text-sm font-semibold mb-3">"Framework"</h3>
-                        <ul class="space-y-2 text-sm text-muted-foreground">
-                            <li><a href="/components">"Components"</a></li>
-                            <li><a href="/icons">"Icons"</a></li>
-                            <li><a href="/blocks">"Blocks"</a></li>
+                        <h3 class="text-sm font-semibold">"Framework"</h3>
+                        <ul class="mt-3 space-y-2 text-sm text-muted-foreground">
+                            <li><a class="transition-colors hover:text-foreground" href="/docs">"Docs"</a></li>
+                            <li><a class="transition-colors hover:text-foreground" href="/auth">"Auth"</a></li>
+                            <li><a class="transition-colors hover:text-foreground" href="/runtime">"Runtime"</a></li>
+                            <li><a class="transition-colors hover:text-foreground" href="/orm">"ORM"</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h3 class="text-sm font-semibold mb-3">"Community"</h3>
-                        <ul class="space-y-2 text-sm text-muted-foreground">
-                            <li><a href="https://github.com/montrs/montrs" target="_blank">"GitHub"</a></li>
-                            <li><a href="https://docs.montrs.com" target="_blank">"Documentation"</a></li>
+                        <h3 class="text-sm font-semibold">"UI"</h3>
+                        <ul class="mt-3 space-y-2 text-sm text-muted-foreground">
+                            <li><a class="transition-colors hover:text-foreground" href="/ui/components">"Components"</a></li>
+                            <li><a class="transition-colors hover:text-foreground" href="/ui/blocks">"Blocks"</a></li>
+                            <li><a class="transition-colors hover:text-foreground" href="/ui/icons">"Icons"</a></li>
+                            <li><a class="transition-colors hover:text-foreground" href="/ui/motion">"Motion"</a></li>
                         </ul>
                     </div>
                     <div>
-                        <h3 class="text-sm font-semibold mb-3">"Legal"</h3>
-                        <ul class="space-y-2 text-sm text-muted-foreground">
-                            <li>"MIT License"</li>
+                        <h3 class="text-sm font-semibold">"Community"</h3>
+                        <ul class="mt-3 space-y-2 text-sm text-muted-foreground">
+                            <li>
+                                <a class="transition-colors hover:text-foreground" href="https://github.com/montrs/montrs" target="_blank" rel="noopener noreferrer">
+                                    "GitHub"
+                                </a>
+                            </li>
+                            <li>
+                                <a class="transition-colors hover:text-foreground" href="https://github.com/montrs/montrs" target="_blank" rel="noopener noreferrer">
+                                    "Documentation"
+                                </a>
+                            </li>
+                            <li>"Apache-2.0 / MIT"</li>
                         </ul>
                     </div>
                 </div>
-                <div class="mt-8 border-t border-border pt-8 text-center text-sm text-muted-foreground">
-                    "© 2026 MontRS. All rights reserved."
+                <div class="mt-10 flex flex-col items-center justify-between gap-4 border-t border-border pt-8 text-sm text-muted-foreground sm:flex-row">
+                    <p>"© 2026 MontRS — Apache-2.0 / MIT"</p>
+                    <a
+                        class="font-mono text-xs transition-colors hover:text-foreground"
+                        href="https://github.com/montrs/montrs"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        "github.com/montrs/montrs"
+                    </a>
                 </div>
             </div>
         </footer>

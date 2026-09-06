@@ -72,7 +72,8 @@ pub async fn run(
         } else {
             println!(
                 "{}",
-                style(format!("{} files need formatting.", files_formatted)).red()
+                style(format!("{} files need formatting.", files_formatted))
+                    .red()
             );
             anyhow::bail!("Formatting check failed");
         }
@@ -98,14 +99,23 @@ fn format_one_file(
     let formatted = match format_source(&original, settings) {
         Ok(f) => f,
         Err(e) => {
-            eprintln!("{} {}: {}", style("Error").red().bold(), path.display(), e);
+            eprintln!(
+                "{} {}: {}",
+                style("Error").red().bold(),
+                path.display(),
+                e
+            );
             return Ok(false);
         }
     };
 
     if original != formatted {
         if check {
-            println!("{} {} is not formatted", style("✘").red(), path.display());
+            println!(
+                "{} {} is not formatted",
+                style("✘").red(),
+                path.display()
+            );
             return Ok(true);
         } else {
             std::fs::write(path, formatted)?;

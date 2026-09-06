@@ -41,7 +41,13 @@ pub async fn run() -> anyhow::Result<()> {
 
     let addr = pipeline.meta.serve.site_addr.clone();
     let site_root = pipeline.site_root.to_string_lossy().to_string();
-    let pkg_dir = pipeline.pkg_dir.to_string_lossy().to_string();
+    // URL path relative to the site root (see `montrs serve` for why).
+    let pkg_dir = pipeline
+        .meta
+        .serve
+        .site_pkg_dir
+        .trim_end_matches('/')
+        .to_string();
 
     let bin = pipeline.server_bin_path();
 

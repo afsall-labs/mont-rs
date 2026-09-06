@@ -29,59 +29,185 @@
 // SOFTWARE.
 
 use leptos::prelude::*;
+use montrs_core::nav::*;
 use montrs_icons::*;
 use montrs_ui::prelude::*;
+
+// NOTE: nav links use plain anchors with a `use_navigate` click handler.
+// `use_navigate` (RouterContext::navigate) updates the internal location AND
+// completes the browser-history navigation immediately — unlike `<A>`, whose
+// global anchor interception defers the URL update until the leptos
+// `<Routes>` tree resolves. Our custom RouterOutlet never resolves routes,
+// so `<A>` would stop updating the address bar entirely.
 
 #[component]
 pub fn Header() -> impl IntoView {
     let theme = use_theme();
+    let theme_open = RwSignal::new(false);
+    let mobile_open = RwSignal::new(false);
+    let navigate = use_navigate();
+
+    let theme_icon = Memo::new(move |_| match theme.get() {
+        ThemeMode::Light => Glyph::Sun,
+        ThemeMode::Dark => Glyph::Moon,
+        ThemeMode::System => Glyph::Monitor,
+    });
+
+    let nav_links = [
+        ("/", "Home"),
+        ("/ui", "UI"),
+        ("/docs", "Docs"),
+        ("/auth", "Auth"),
+        ("/runtime", "Runtime"),
+        ("/ai", "AI Kit"),
+        ("/orm", "ORM"),
+    ];
+
+    let theme_modes = [
+        ("System", ThemeMode::System, Glyph::Monitor),
+        ("Light", ThemeMode::Light, Glyph::Sun),
+        ("Dark", ThemeMode::Dark, Glyph::Moon),
+    ];
 
     view! {
         <header class="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-            <div class="mx-auto max-w-6xl flex h-16 items-center justify-between px-6 lg:px-8">
+            <div class="page-container flex h-16 items-center justify-between">
                 <div class="flex items-center gap-6">
-                    <a href="/" class="flex items-center gap-2 font-bold text-lg">
-                        <Icon glyph=Glyph::Blocks class="w-6 h-6 text-primary" />
+<a
+                        href="/"
+                        class="flex items-center gap-2 text-lg font-bold"
+                        on:click={
+                            let nav = navigate.clone();
+                            move |ev| {
+                                ev.prevent_default();
+                                nav("/", Default::default());
+                            }
+                        }
+                    >
+                        <img src="/logo-64.png" alt="MontRS logo" class="h-7 w-7 rounded" />
                         "MontRS"
                     </a>
-                    <nav class="hidden md:flex items-center gap-6 text-sm">
-                        <a href="/" class="text-muted-foreground hover:text-foreground transition-colors">
-                            "Home"
-                        </a>
-                        <a href="/icons" class="text-muted-foreground hover:text-foreground transition-colors">
-                            "Icons"
-                        </a>
-                        <a href="/components" class="text-muted-foreground hover:text-foreground transition-colors">
-                            "Components"
-                        </a>
-                        <a href="/blocks" class="text-muted-foreground hover:text-foreground transition-colors">
-                            "Blocks"
-                        </a>
-                        <a href="/motion" class="text-muted-foreground hover:text-foreground transition-colors">
-                            "Motion"
-                        </a>
-                        <a href="/animated-icons" class="text-muted-foreground hover:text-foreground transition-colors">
-                            "Animated Icons"
-                        </a>
+                    <nav class="hidden items-center gap-1 text-sm md:flex">
+                        {nav_links.into_iter().map(|(href, label)| {
+                            let nav = navigate.clone();
+                            view! {
+                                <a
+                                    href=href
+                                    class="rounded-md px-3 py-2 text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                                    on:click=move |ev| {
+                                        ev.prevent_default();
+                                        nav(href, Default::default());
+                                    }
+                                >{label}</a>
+                            }
+                        }).collect::<Vec<_>>()}
                     </nav>
                 </div>
-                <div class="flex items-center gap-4">
-                    <a href="https://github.com/montrs/montrs" target="_blank"
-                        class="text-muted-foreground hover:text-foreground transition-colors"
+
+                <div class="relative flex items-center gap-2">
+                    <a
+                        href="https://github.com/montrs/montrs"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="hidden items-center gap-1.5 rounded-md border border-border px-2.5 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground sm:inline-flex"
                     >
-                        <Icon glyph=Glyph::Globe class="w-5 h-5" />
+                        <Icon glyph=Glyph::Star class="h-3.5 w-3.5" />
+                        "Star"
                     </a>
+
+                    // Theme toggle: defaults to System, with explicit
+                    // Light/Dark choices persisted to localStorage.
+                    <div class="relative">
+                        <button
+                            type="button"
+                            class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                            on:click=move |_| theme_open.update(|o| *o = !*o)
+                            aria-label="Toggle theme"
+                            aria-haspopup="menu"
+                            aria-expanded=move || theme_open.get()
+                        >
+                            <Icon glyph=Signal::from(theme_icon) class="h-4 w-4" />
+                        </button>
+
+                        <Show when=move || theme_open.get()>
+                            <div
+                                class="fixed inset-0 z-40"
+                                on:click=move |_| theme_open.set(false)
+                            ></div>
+                            <div
+                                class="absolute right-0 z-50 mt-2 w-36 rounded-md border border-border bg-popover p-1 shadow-lg"
+                                role="menu"
+                                aria-label="Theme"
+                            >
+                                {theme_modes.into_iter().map(|(label, mode, icon)| {
+                                    let mode2 = mode;
+                                    let is_selected = move || theme.get() == mode2;
+                                    let select = move |_| {
+                                        theme.set(mode2);
+                                        theme_open.set(false);
+                                    };
+                                    view! {
+                                        <button
+                                            type="button"
+                                            role="menuitem"
+                                            class=move || {
+                                                let base = "flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-sm transition-colors";
+                                                if is_selected() {
+                                                    format!("{base} bg-accent font-medium text-accent-foreground")
+                                                } else {
+                                                    format!("{base} text-muted-foreground hover:bg-accent hover:text-accent-foreground")
+                                                }
+                                            }
+                                            on:click=select
+                                        >
+                                            <Icon glyph=icon class="h-4 w-4" />
+                                            {label}
+                                            <span class="ml-auto flex items-center">
+                                                <Icon glyph=Glyph::Check class=move || {
+                                                    if is_selected() { "h-3.5 w-3.5" } else { "h-3.5 w-3.5 opacity-0" }
+                                                } />
+                                            </span>
+                                        </button>
+                                    }
+                                }).collect::<Vec<_>>()}
+                            </div>
+                        </Show>
+                    </div>
+
+                    // Mobile menu toggle
                     <button
-                        class="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground h-9 w-9"
-                        on:click=move |_| toggle_theme()
-                        aria-label="Toggle theme"
+                        type="button"
+                        class="inline-flex h-9 w-9 items-center justify-center rounded-md border border-border text-muted-foreground transition-colors hover:bg-accent hover:text-foreground md:hidden"
+                        on:click=move |_| mobile_open.update(|o| *o = !*o)
+                        aria-label="Open menu"
+                        aria-expanded=move || mobile_open.get()
                     >
-                        {move || match theme.get() {
-                            ThemeMode::Light => view! { <Icon glyph=Glyph::Sun class="w-4 h-4" /> }.into_any(),
-                            ThemeMode::Dark => view! { <Icon glyph=Glyph::Moon class="w-4 h-4" /> }.into_any(),
-                            ThemeMode::System => view! { <Icon glyph=Glyph::Monitor class="w-4 h-4" /> }.into_any(),
-                        }}
+                        <Icon glyph=Glyph::Menu class="h-4 w-4" />
                     </button>
+
+                    <Show when=move || mobile_open.get()>
+                        <div
+                            class="fixed inset-0 z-40"
+                            on:click=move |_| mobile_open.set(false)
+                        ></div>
+                        <div class="absolute right-0 top-12 z-50 w-44 rounded-md border border-border bg-popover p-1 shadow-lg md:hidden">
+                            {nav_links.into_iter().map(|(href, label)| {
+                                let nav = navigate.clone();
+                                let close_menu = mobile_open;
+                                view! {
+                                    <a
+                                        href=href
+                                        class="block rounded-sm px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
+                                        on:click=move |ev| {
+                                            ev.prevent_default();
+                                            nav(href, Default::default());
+                                            close_menu.set(false);
+                                        }
+                                    >{label}</a>
+                                }
+                            }).collect::<Vec<_>>()}
+                        </div>
+                    </Show>
                 </div>
             </div>
         </header>

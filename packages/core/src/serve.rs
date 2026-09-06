@@ -108,7 +108,17 @@ where
         std::env::set_var("LEPTOS_RELOAD_PORT", &reload_port);
     }
 
-    let conf = get_configuration(None).unwrap();
+    let mut conf = get_configuration(None).unwrap();
+
+    // The pkg dir must stay a site-root-relative URL path (e.g. "pkg").
+    // An absolute filesystem path here (which the CLI could pass through)
+    // leaks `\\?\C:\...` into the hydration bootstrap's `import()` specifier
+    // and breaks WASM loading entirely.
+    let relative_pkg = std::path::Path::new(&*conf.leptos_options.site_pkg_dir)
+        .file_name()
+        .map(|n| n.to_string_lossy().to_string())
+        .unwrap_or_else(|| pkg_dir.clone());
+    conf.leptos_options.site_pkg_dir = relative_pkg.into();
 
     let axum_routes = router.to_axum_route_listings();
 
@@ -118,8 +128,13 @@ where
             axum_routes,
             {
                 let r = router.clone();
+                let leptos_options = conf.leptos_options.clone();
                 move || {
                     provide_context(r.clone());
+                    // The SSR shell reads `LeptosOptions` (output_name,
+                    // site_root, pkg dir) to render the hydration bootstrap
+                    // scripts that match the WASM bundle names.
+                    provide_context(leptos_options.clone());
                 }
             },
             app_fn,

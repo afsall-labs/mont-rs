@@ -24,6 +24,35 @@ pub fn hydrate() {
 }
 
 #[component]
+pub fn Shell() -> impl IntoView {
+    let leptos_options = use_context::<LeptosOptions>()
+        .expect("LeptosOptions must be provided by the SSR server");
+
+    view! {
+        <html lang="en">
+            <head>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+                <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+                <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+                <link rel="apple-touch-icon" href="/favicon-180.png" />
+                <link rel="stylesheet" href="/main.css" />
+                <title>"MontRS"</title>
+                // Apply the saved/system theme before first paint, then let
+                // ThemeProvider take over after hydration.
+                <script>
+                    "(function(){try{var t=localStorage.getItem('montrs-theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;if(d)document.documentElement.classList.add('dark');}catch(e){}})();"
+                </script>
+                <HydrationScripts options=leptos_options />
+            </head>
+            <body>
+                <App />
+            </body>
+        </html>
+    }
+}
+
+#[component]
 pub fn App() -> impl IntoView {
     leptos_meta::provide_meta_context();
     view! {

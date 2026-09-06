@@ -1,0 +1,116 @@
+// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+// This file is part of montrs.
+// Copyright (C) 2026-Present Afsall Inc.
+// SPDX-License-Identifier: Apache-2.0 OR MIT
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+// http://www.apache.org/licenses/LICENSE-2.0
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// Alternatively, this file is available under the MIT License:
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
+
+use crate::highlight::highlight_rust;
+use leptos::prelude::*;
+use montrs_icons::*;
+use montrs_ui::prelude::*;
+
+const RUNTIME_SNIPPET: &str = r#"use montrs_runtime::Runtime;
+
+let mut rt = Runtime::builder()
+    .with_op(console::log)
+    .with_op(fs::read)
+    .with_op(net::fetch)
+    .with_memory_limits(64 * 1024 * 1024)
+    .build()?;
+
+rt.run(script)?;
+"#;
+
+#[component]
+pub fn Runtime() -> impl IntoView {
+    let ops = [
+        (
+            Glyph::Terminal,
+            "Ops",
+            "Deno-inspired op registration — typed, async, cancellable.",
+        ),
+        (
+            Glyph::MemoryStick,
+            "Memory",
+            "Memory-optimized execution with ROM and resource tables.",
+        ),
+        (
+            Glyph::Workflow,
+            "Event Loop",
+            "A single-threaded event loop with deterministic scheduling.",
+        ),
+        (
+            Glyph::ShieldCheck,
+            "Permissions",
+            "Per-op permission gates with a typed capability model.",
+        ),
+        (
+            Glyph::Cpu,
+            "Ext",
+            "console, crypto, fs, http, net, os, process, and web extensions.",
+        ),
+        (
+            Glyph::CodeXml,
+            "Modules",
+            "Module graphs, code caching, and hot script reloading.",
+        ),
+    ];
+
+    view! {
+        <div class="page-container py-12">
+            <div class="mb-10">
+                <h1 class="text-3xl font-bold tracking-tight">"Runtime"</h1>
+                <p class="mt-2 max-w-2xl text-muted-foreground">
+                    "A native Rust runtime for embedded scripting — Deno-inspired
+                    ops, memory-optimized, and deterministic."
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {ops.into_iter().map(|(icon, title, desc)| view! {
+                    <div class="showcase-card reveal p-6">
+                        <Icon glyph=icon class="h-6 w-6 text-primary" />
+                        <h3 class="mt-4 font-semibold">{title}</h3>
+                        <p class="mt-2 text-sm leading-6 text-muted-foreground">{desc}</p>
+                    </div>
+                }).collect::<Vec<_>>()}
+            </div>
+
+            <div class="mt-10">
+                <div class="code-window max-w-2xl">
+                    <div class="code-window-bar">
+                        <span class="traffic-light traffic-light-red"></span>
+                        <span class="traffic-light traffic-light-yellow"></span>
+                        <span class="traffic-light traffic-light-green"></span>
+                        <span class="code-window-tab">"runtime.rs"</span>
+                    </div>
+                    <pre class="code-window-body text-left" inner_html=highlight_rust(RUNTIME_SNIPPET)></pre>
+                </div>
+            </div>
+        </div>
+    }
+}

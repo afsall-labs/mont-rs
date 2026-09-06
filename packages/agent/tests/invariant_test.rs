@@ -28,10 +28,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
 
-use time::OffsetDateTime;
 use montrs_agent::{AgentManager, AgentSnapshot, PlateSummary};
 use std::collections::HashMap;
 use tempfile::tempdir;
+use time::OffsetDateTime;
 
 #[test]
 fn test_invariant_dependencies() {

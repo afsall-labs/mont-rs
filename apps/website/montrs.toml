@@ -13,6 +13,11 @@ tailwind-input-file = "style/main.css"
 site-root = "target/site"
 site-pkg-dir = "pkg"
 package = "website"
+# Must match the `--out-name front` bundle produced by the build pipeline so
+# the SSR hydration bootstrap (`/pkg/front.js` + `/pkg/front_bg.wasm`) lines
+# up with the actual WASM bundle.
+output-name = "front"
+assets-dir = "assets"
 release = true
 
 [tasks]

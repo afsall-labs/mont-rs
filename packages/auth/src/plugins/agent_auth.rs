@@ -37,10 +37,10 @@ use axum::{
     extract::State,
     routing::{get, post},
 };
-use time::OffsetDateTime;
 use serde::{Deserialize, Serialize};
 use serde_json::{Value, json};
 use std::collections::HashMap;
+use time::OffsetDateTime;
 
 /// A registered agent.
 #[derive(Debug, Clone, Serialize, Deserialize)]

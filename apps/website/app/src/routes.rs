@@ -44,6 +44,13 @@ impl RouteView for HomeView {
     }
 }
 
+pub struct UiView;
+impl RouteView for UiView {
+    fn render(&self) -> impl IntoView {
+        view! { <crate::pages::Ui /> }
+    }
+}
+
 pub struct IconsView;
 impl RouteView for IconsView {
     fn render(&self) -> impl IntoView {
@@ -72,6 +79,41 @@ impl RouteView for MotionView {
     }
 }
 
+pub struct DocsView;
+impl RouteView for DocsView {
+    fn render(&self) -> impl IntoView {
+        view! { <crate::pages::Docs /> }
+    }
+}
+
+pub struct AuthView;
+impl RouteView for AuthView {
+    fn render(&self) -> impl IntoView {
+        view! { <crate::pages::Auth /> }
+    }
+}
+
+pub struct RuntimeView;
+impl RouteView for RuntimeView {
+    fn render(&self) -> impl IntoView {
+        view! { <crate::pages::Runtime /> }
+    }
+}
+
+pub struct AiKitView;
+impl RouteView for AiKitView {
+    fn render(&self) -> impl IntoView {
+        view! { <crate::pages::AiKit /> }
+    }
+}
+
+pub struct OrmView;
+impl RouteView for OrmView {
+    fn render(&self) -> impl IntoView {
+        view! { <crate::pages::Orm /> }
+    }
+}
+
 pub struct FoundationsView;
 impl RouteView for FoundationsView {
     fn render(&self) -> impl IntoView {
@@ -79,23 +121,25 @@ impl RouteView for FoundationsView {
     }
 }
 
-pub struct AnimatedIconsView;
-impl RouteView for AnimatedIconsView {
-    fn render(&self) -> impl IntoView {
-        view! { <crate::pages::AnimatedIcons /> }
-    }
-}
-
 // ---------------------------------------------------------------------------
-// MontRS Routes (using view_route! macro)
+// MontRS Routes
 // ---------------------------------------------------------------------------
 
 view_route! { HomeRoute, "/", HomeView }
-view_route! { IconsRoute, "/icons", IconsView }
-view_route! { ComponentsRoute, "/components", ComponentsView }
-view_route! { BlocksRoute, "/blocks", BlocksView }
-view_route! { MotionRoute, "/motion", MotionView }
-view_route! { AnimatedIconsRoute, "/animated-icons", AnimatedIconsView }
+
+// UI section (components, blocks, icons, motion)
+view_route! { UiRoute, "/ui", UiView }
+view_route! { ComponentsRoute, "/ui/components", ComponentsView }
+view_route! { BlocksRoute, "/ui/blocks", BlocksView }
+view_route! { IconsRoute, "/ui/icons", IconsView }
+view_route! { MotionRoute, "/ui/motion", MotionView }
+
+// Framework sections
+view_route! { DocsRoute, "/docs", DocsView }
+view_route! { AuthRoute, "/auth", AuthView }
+view_route! { RuntimeRoute, "/runtime", RuntimeView }
+view_route! { AiKitRoute, "/ai", AiKitView }
+view_route! { OrmRoute, "/orm", OrmView }
 view_route! { FoundationsRoute, "/foundations", FoundationsView }
 
 // ---------------------------------------------------------------------------
@@ -127,11 +171,16 @@ impl<C: AppConfig + 'static> Plate<C> for WebsitePlate {
 
     fn register_routes(&self, router: &mut Router<C>) {
         router.register(HomeRoute);
-        router.register(IconsRoute);
+        router.register(UiRoute);
         router.register(ComponentsRoute);
         router.register(BlocksRoute);
+        router.register(IconsRoute);
         router.register(MotionRoute);
-        router.register(AnimatedIconsRoute);
+        router.register(DocsRoute);
+        router.register(AuthRoute);
+        router.register(RuntimeRoute);
+        router.register(AiKitRoute);
+        router.register(OrmRoute);
         router.register(FoundationsRoute);
     }
 }
