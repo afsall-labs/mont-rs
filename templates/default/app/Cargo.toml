@@ -19,7 +19,7 @@ montrs-icons = { path = "../../../packages/icons" }
 montrs-state = { path = "../../../packages/state" }
 montrs-hotkeys-core = { path = "../../../packages/hotkeys-core" }
 montrs-table-core = { path = "../../../packages/table-core" }
-leptos = { version = "0.8", features = ["hydrate", "ssr"] }
+leptos = { version = "0.8" }
 leptos_meta = { version = "0.8" }
 leptos_router = { version = "0.8" }
 tokio = { version = "1", features = ["full"], optional = true }

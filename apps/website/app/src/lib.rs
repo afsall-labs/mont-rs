@@ -86,6 +86,9 @@ pub fn Shell() -> impl IntoView {
                 <meta charset="utf-8" />
                 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
                 <meta name="description" content="MontRS — the deterministic, full-stack, cross-platform framework for Rust. Web, desktop, and mobile from one AppSpec." />
+                <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+                <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+                <link rel="apple-touch-icon" href="/favicon-180.png" />
                 <link rel="stylesheet" href="/main.css" />
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="true" />

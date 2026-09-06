@@ -266,6 +266,9 @@ impl BuildPipeline for Pipeline {
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{project_name}</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/favicon-180.png" />
     <link rel="stylesheet" href="/main.css" />
     <link rel="modulepreload" href="/pkg/front.js" />
     <script type="module">
