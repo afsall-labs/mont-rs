@@ -25,15 +25,7 @@ const COLLECTIONS: &[(&str, &str, &str, &str, &str, &str, &str)] = &[
         "WorkOS (Radix UI)",
         "https://github.com/radix-ui/icons",
     ),
-    (
-        "heroicons",
-        "tailwindlabs/heroicons",
-        "master",
-        "src/24/outline",
-        "MIT",
-        "Tailwind Labs Inc.",
-        "https://github.com/tailwindlabs/heroicons",
-    ),
+
     (
         "tabler",
         "tabler/tabler-icons",

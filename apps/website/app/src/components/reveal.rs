@@ -32,10 +32,20 @@
 //! enter the viewport. No-op during SSR (no DOM), so hydration stays in sync.
 
 use leptos::prelude::*;
+use leptos_router::hooks::use_location;
 
 #[component]
 pub fn RevealOnScroll() -> impl IntoView {
+    #[allow(unused_variables)]
+    let first_run = RwSignal::new(true);
+
+    // Re-run on every route change: new pages mount fresh `.reveal`
+    // elements, and without re-observing them they'd stay `opacity:0` until a
+    // manual refresh (the "page looks empty until I refresh" bug).
     Effect::new(move |_| {
+        let location = use_location();
+        let _path = location.pathname.get();
+
         #[cfg(target_arch = "wasm32")]
         {
             use wasm_bindgen::JsCast;
@@ -47,6 +57,14 @@ pub fn RevealOnScroll() -> impl IntoView {
                 return;
             };
 
+            // After the very first paint, scroll to the top on navigation so
+            // the next page is seen from its header (matches SPA behavior).
+            if first_run.get_untracked() {
+                first_run.set(false);
+            } else {
+                let _ = window.scroll_to_with_x_and_y(0.0, 0.0);
+            }
+
             let callback = {
                 let document = document.clone();
                 wasm_bindgen::prelude::Closure::wrap(Box::new(
@@ -57,8 +75,9 @@ pub fn RevealOnScroll() -> impl IntoView {
                                 .dyn_ref::<web_sys::IntersectionObserverEntry>()
                             {
                                 if entry.is_intersecting() {
-                                    if let Some(el) =
-                                        entry.target().dyn_ref::<web_sys::Element>()
+                                    if let Some(el) = entry
+                                        .target()
+                                        .dyn_ref::<web_sys::Element>()
                                     {
                                         let _ = el
                                             .class_list()

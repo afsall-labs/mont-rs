@@ -1,4 +1,4 @@
-// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+﻿// Ø¨ÙØ³Ù’Ù…Ù Ø§Ù„Ù„ÙŽÙ‘Ù‡Ù Ø§Ù„Ø±ÙŽÙ‘Ø­Ù’Ù…ÙŽÙ†Ù Ø§Ù„Ø±ÙŽÙ‘Ø­ÙÙŠÙ…
 // This file is part of montrs.
 // Copyright (C) 2026-Present Afsall Inc.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -32,8 +32,8 @@
 //!
 //! Collections are license-safe (MIT / Apache-2.0 only), fetched from the
 //! upstream GitHub repositories by `montrs-icons-codegen`, and embedded as
-//! static data tables behind per-collection Cargo features (`col-radix`,
-//! `col-heroicons`, …). See `THIRD_PARTY_NOTICES.md` at the repo root.
+//! static data tables behind per-collection Cargo features. See
+//! THIRD_PARTY_NOTICES.md at the repo root.
 
 use crate::glyph::Glyph;
 
@@ -81,7 +81,6 @@ pub struct CollectionInfo {
 pub enum Collection {
     Lucide,
     Radix,
-    Heroicons,
     Tabler,
     Iconoir,
     Phosphor,
@@ -94,8 +93,6 @@ impl Collection {
         Collection::Lucide,
         #[cfg(feature = "col-radix")]
         Collection::Radix,
-        #[cfg(feature = "col-heroicons")]
-        Collection::Heroicons,
         #[cfg(feature = "col-tabler")]
         Collection::Tabler,
         #[cfg(feature = "col-iconoir")]
@@ -121,7 +118,6 @@ impl Collection {
         match self {
             Collection::Lucide => "lucide",
             Collection::Radix => "radix",
-            Collection::Heroicons => "heroicons",
             Collection::Tabler => "tabler",
             Collection::Iconoir => "iconoir",
             Collection::Phosphor => "phosphor",
@@ -129,7 +125,28 @@ impl Collection {
         }
     }
 
-    /// Resolve a collection by its key string (unknown keys → `None`).
+    /// Rendering style: "stroke" sets draw with strokes; "fill" sets draw
+    /// with filled paths and should ignore stroke width/color overrides.
+    pub fn style(self) -> &'static str {
+        match self {
+            Collection::Lucide | Collection::Radix | Collection::Tabler | Collection::Iconoir => {
+                "stroke"
+            }
+            Collection::Phosphor | Collection::Mdi => "fill",
+        }
+    }
+
+    /// Stroke width that suits this collection's view-box (fill sets return
+    /// their captured value, which callers can ignore).
+    pub fn default_stroke_width(self) -> f64 {
+        match self {
+            Collection::Tabler => 2.0,
+            Collection::Radix => 1.2,
+            _ => 1.5,
+        }
+    }
+
+    /// Resolve a collection by its key string (unknown keys â†’ `None`).
     pub fn from_key(key: &str) -> Option<Collection> {
         Collection::ALL.iter().copied().find(|c| c.key() == key)
     }
@@ -163,8 +180,6 @@ impl Collection {
                 .collect(),
             #[cfg(feature = "col-radix")]
             Collection::Radix => table(&crate::collections::data::RADIX_ICONS),
-            #[cfg(feature = "col-heroicons")]
-            Collection::Heroicons => table(&crate::collections::data::HEROICONS_ICONS),
             #[cfg(feature = "col-tabler")]
             Collection::Tabler => table(&crate::collections::data::TABLER_ICONS),
             #[cfg(feature = "col-iconoir")]
@@ -184,8 +199,6 @@ impl Collection {
             Collection::Lucide => Glyph::count(),
             #[cfg(feature = "col-radix")]
             Collection::Radix => crate::collections::data::RADIX_ICONS.len(),
-            #[cfg(feature = "col-heroicons")]
-            Collection::Heroicons => crate::collections::data::HEROICONS_ICONS.len(),
             #[cfg(feature = "col-tabler")]
             Collection::Tabler => crate::collections::data::TABLER_ICONS.len(),
             #[cfg(feature = "col-iconoir")]

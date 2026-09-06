@@ -18,7 +18,7 @@ required-features = ["ssr"]
 
 [dependencies]
 montrs-core = { path = "../../packages/core" }
-montrs-icons = { path = "../../packages/icons", features = ["animated", "col-radix", "col-heroicons", "col-tabler", "col-iconoir", "col-phosphor", "col-mdi"] }
+montrs-icons = { path = "../../packages/icons", features = ["animated", "col-radix", "col-tabler", "col-iconoir", "col-phosphor", "col-mdi"] }
 montrs-ui = { path = "../../packages/ui" }
 montrs-motion = { path = "../../packages/motion" }
 montrs-state = { path = "../../packages/state" }
