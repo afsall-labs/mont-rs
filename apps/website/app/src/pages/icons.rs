@@ -31,6 +31,8 @@
 use crate::copy::CopyButton;
 use leptos::prelude::*;
 use montrs_core::nav::*;
+use montrs_icons::collections::CollectedGlyph;
+use montrs_icons::{Collection, Glyph, Icon, AnimatedSvg};
 use montrs_ui::components::switch::Switch;
 use montrs_ui::prelude::*;
 
@@ -49,18 +51,18 @@ fn formatted_name(name: &str) -> String {
         .join(" ")
 }
 
-fn full_svg_markup(glyph: Glyph, size: u32, stroke_w: f64) -> String {
+fn full_svg_markup(g: &CollectedGlyph, size: u32, stroke_w: f64) -> String {
     format!(
         "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"{size}\" \
-         height=\"{size}\" viewBox=\"0 0 24 24\" fill=\"none\" \
-         stroke=\"currentColor\" stroke-width=\"{stroke_w}\" \
-         stroke-linecap=\"round\" stroke-linejoin=\"round\">{}</svg>",
-        glyph.svg()
+         height=\"{size}\" viewBox=\"{}\" fill=\"{}\" stroke=\"{}\" \
+         stroke-width=\"{stroke_w}\" stroke-linecap=\"round\" \
+         stroke-linejoin=\"round\">{}</svg>",
+        g.viewbox, g.fill, g.stroke, g.svg
     )
 }
 
 // ---------------------------------------------------------------------------
-// MRU (localStorage, client-only)
+// MRU (localStorage, client-only, Lucide-only)
 // ---------------------------------------------------------------------------
 
 fn load_mru() -> Vec<Glyph> {
@@ -101,6 +103,13 @@ pub fn Icons() -> impl IntoView {
     let query = use_query_map();
     let navigate = use_navigate();
 
+    let collection = RwSignal::new(
+        query
+            .get()
+            .get("collection")
+            .and_then(|k| Collection::from_key(&k))
+            .unwrap_or(Collection::Lucide),
+    );
     let search = RwSignal::new(query.get().get("q").unwrap_or_default());
     let size_px = RwSignal::new(
         query
@@ -125,7 +134,7 @@ pub fn Icons() -> impl IntoView {
     let hydrated = RwSignal::new(false);
     let mru = RwSignal::new(Vec::<Glyph>::new());
     let visible_count = RwSignal::new(CHUNK_SIZE);
-    let selected_icon = RwSignal::new(None::<Glyph>);
+    let selected_icon = RwSignal::new(None::<CollectedGlyph>);
     let anim_choice = RwSignal::new("auto".to_string());
 
     // Set MRU + hydration flag after mount so SSR and hydration stay in sync.
@@ -140,21 +149,45 @@ pub fn Icons() -> impl IntoView {
     Effect::new(move |_| {
         search.get();
         category.get();
+        collection.get();
         visible_count.set(CHUNK_SIZE);
     });
 
+    let is_lucide = move || collection.get() == Collection::Lucide;
+
+    // Unified filtered list over the active collection.
     let filtered = Memo::new(move |_| {
-        let s = search.get();
+        let s = search.get().to_lowercase();
         let cat = category.get();
-        let mut found = if s.is_empty() {
-            Glyph::find("")
+        if collection.get() == Collection::Lucide {
+            let mut found = if s.is_empty() {
+                Glyph::find("")
+            } else {
+                Glyph::find(&s)
+            };
+            if !cat.is_empty() {
+                found.retain(|g| {
+                    g.categories().any(|c| c.eq_ignore_ascii_case(&cat))
+                });
+            }
+            found
+                .into_iter()
+                .map(|g| CollectedGlyph {
+                    name: g.name(),
+                    svg: g.svg(),
+                    viewbox: "0 0 24 24",
+                    fill: "none",
+                    stroke: "currentColor",
+                })
+                .collect::<Vec<_>>()
         } else {
-            Glyph::find(&s)
-        };
-        if !cat.is_empty() {
-            found.retain(|g| g.categories().any(|c| c.eq_ignore_ascii_case(&cat)));
+            collection
+                .get()
+                .icons()
+                .into_iter()
+                .filter(|g| s.is_empty() || g.name.to_lowercase().contains(&s))
+                .collect::<Vec<_>>()
         }
-        found
     });
 
     let filtered_limited = Memo::new(move |_| {
@@ -198,15 +231,19 @@ pub fn Icons() -> impl IntoView {
         }
     });
 
-    let select_icon = move |glyph: Glyph| {
+    let select_icon = move |glyph: CollectedGlyph| {
         selected_icon.set(Some(glyph));
         anim_choice.set("auto".to_string());
-        mru.update(|v| {
-            v.retain(|g| *g != glyph);
-            v.insert(0, glyph);
-            v.truncate(8);
-            save_mru(v);
-        });
+        if collection.get() == Collection::Lucide {
+            if let Some(g) = Glyph::by_name(glyph.name) {
+                mru.update(|v| {
+                    v.retain(|x| *x != g);
+                    v.insert(0, g);
+                    v.truncate(8);
+                    save_mru(v);
+                });
+            }
+        }
     };
 
     let clear_filters = move |_: leptos::ev::MouseEvent| {
@@ -214,12 +251,15 @@ pub fn Icons() -> impl IntoView {
         category.set(String::new());
     };
 
-    // Per-control navigation that mirrors state to the URL (replace, so
-    // the history doesn't fill with slider ticks).
     let sync_url = {
         let nav = navigate.clone();
         move || {
-            let mut q = format!("/ui/icons?size={}&sw={}", size_px.get(), stroke_w.get());
+            let mut q = format!(
+                "/ui/icons?collection={}&size={}&sw={}",
+                collection.get().key(),
+                size_px.get(),
+                stroke_w.get()
+            );
             let s = search.get();
             if !s.is_empty() {
                 q.push_str(&format!("&q={}", s));
@@ -235,7 +275,13 @@ pub fn Icons() -> impl IntoView {
             if animated.get() {
                 q.push_str("&anim=1");
             }
-            nav(&q, NavigateOptions { replace: true, ..Default::default() });
+            nav(
+                &q,
+                NavigateOptions {
+                    replace: true,
+                    ..Default::default()
+                },
+            );
         }
     };
 
@@ -271,20 +317,19 @@ pub fn Icons() -> impl IntoView {
             sync();
         }
     };
-
     let size_text = move || format!("{}px", size_px.get());
     let sw_text = move || format!("{:.2}px", stroke_w.get());
     let stroke_val = Signal::derive(move || {
         let c = color.get();
-        if c.is_empty() {
-            "currentColor".to_string()
-        } else {
-            c
-        }
+        if c.is_empty() { "currentColor".to_string() } else { c }
     });
     let size_val = Signal::derive(move || size_px.get().to_string());
     let sw_val = Signal::derive(move || format!("{:.2}", stroke_w.get()));
-    let mru_visible = move || search.get().is_empty() && category.get().is_empty();
+    let mru_visible = move || {
+        collection.get() == Collection::Lucide
+            && search.get().is_empty()
+            && category.get().is_empty()
+    };
 
     let anim_choices = [
         ("auto", "Auto"),
@@ -311,9 +356,41 @@ pub fn Icons() -> impl IntoView {
                             <div>
                                 <p class="text-sm font-semibold">"Icons"</p>
                                 <p class="font-mono text-[11px] text-muted-foreground">
-                                    {move || format!("{} icons", Glyph::count())}
+                                    {move || format!("{} icons", filtered.get().len())}
                                 </p>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="icons-sidebar-section">
+                        <p class="icons-sidebar-heading">"Collection"</p>
+                        <div class="space-y-0.5">
+                            {Collection::ALL.iter().map(|c| {
+                                let c = *c;
+                                let label = c.label().to_string();
+                                let count = c.count();
+                                let is_active = move || collection.get() == c;
+                                view! {
+                                    <button
+                                        type="button"
+                                        class=move || {
+                                            let base = "flex w-full items-center justify-between rounded-md px-2 py-1 text-left text-sm transition-colors";
+                                            if is_active() {
+                                                format!("{base} bg-accent font-medium text-foreground")
+                                            } else {
+                                                format!("{base} text-muted-foreground hover:bg-accent/60 hover:text-foreground")
+                                            }
+                                        }
+                                        on:click={
+                                                let sync = sync_url.clone();
+                                                move |_| { collection.set(c); category.set(String::new()); sync(); }
+                                            }
+                                    >
+                                        <span>{label}</span>
+                                        <span class="font-mono text-[10px]">{count.to_string()}</span>
+                                    </button>
+                                }
+                            }).collect::<Vec<_>>()}
                         </div>
                     </div>
 
@@ -375,55 +452,57 @@ pub fn Icons() -> impl IntoView {
                         </div>
                     </div>
 
-                    <div class="icons-sidebar-section">
-                        <p class="icons-sidebar-heading">"Categories"</p>
-                        <div class="max-h-64 space-y-0.5 overflow-y-auto pr-1">
-                            <button
-                                type="button"
-                                class=move || {
-                                    let base = "flex w-full items-center justify-between rounded-md px-2 py-1 text-left text-sm transition-colors";
-                                    if category.get().is_empty() {
-                                        format!("{base} bg-accent font-medium text-foreground")
-                                    } else {
-                                        format!("{base} text-muted-foreground hover:bg-accent/60 hover:text-foreground")
-                                    }
-                                }
-                                on:click={
-                                    let sync = sync_url.clone();
-                                    move |_| { category.set(String::new()); sync(); }
-                                }
-                            >
-                                <span>"All"</span>
-                                <span class="font-mono text-[10px]">{Glyph::count().to_string()}</span>
-                            </button>
-                            {categories.iter().map(|(title, count)| {
-                                let cat = title.clone();
-                                let title2 = title.clone();
-                                let count2 = count.to_string();
-                                let cat_for_active = cat.clone();
-                                let cat_for_click = cat.clone();
-                                let is_active = move || category.get().eq_ignore_ascii_case(&cat_for_active);
-                                let sync = sync_url.clone();
-                                view! {
-                                    <button
-                                        type="button"
-                                        class=move || {
-                                            let base = "flex w-full items-center justify-between rounded-md px-2 py-1 text-left text-sm transition-colors";
-                                            if is_active() {
-                                                format!("{base} bg-accent font-medium text-foreground")
-                                            } else {
-                                                format!("{base} text-muted-foreground hover:bg-accent/60 hover:text-foreground")
-                                            }
+                    <Show when=is_lucide>
+                        <div class="icons-sidebar-section">
+                            <p class="icons-sidebar-heading">"Categories"</p>
+                            <div class="max-h-64 space-y-0.5 overflow-y-auto pr-1">
+                                <button
+                                    type="button"
+                                    class=move || {
+                                        let base = "flex w-full items-center justify-between rounded-md px-2 py-1 text-left text-sm transition-colors";
+                                        if category.get().is_empty() {
+                                            format!("{base} bg-accent font-medium text-foreground")
+                                        } else {
+                                            format!("{base} text-muted-foreground hover:bg-accent/60 hover:text-foreground")
                                         }
-                                        on:click=move |_| { category.set(cat_for_click.clone()); sync(); }
-                                    >
-                                        <span>{title2}</span>
-                                        <span class="font-mono text-[10px]">{count2}</span>
-                                    </button>
-                                }
-                            }).collect::<Vec<_>>()}
+                                    }
+                                    on:click={
+                                        let sync = sync_url.clone();
+                                        move |_| { category.set(String::new()); sync(); }
+                                    }
+                                >
+                                    <span>"All"</span>
+                                    <span class="font-mono text-[10px]">{Glyph::count().to_string()}</span>
+                                </button>
+                                {categories.iter().map(|(title, count)| {
+                                    let cat = title.clone();
+                                    let title2 = title.clone();
+                                    let count2 = count.to_string();
+                                    let cat_for_active = cat.clone();
+                                    let cat_for_click = cat.clone();
+                                    let is_active = move || category.get().eq_ignore_ascii_case(&cat_for_active);
+                                    let sync = sync_url.clone();
+                                    view! {
+                                        <button
+                                            type="button"
+                                            class=move || {
+                                                let base = "flex w-full items-center justify-between rounded-md px-2 py-1 text-left text-sm transition-colors";
+                                                if is_active() {
+                                                    format!("{base} bg-accent font-medium text-foreground")
+                                                } else {
+                                                    format!("{base} text-muted-foreground hover:bg-accent/60 hover:text-foreground")
+                                                }
+                                            }
+                                            on:click=move |_| { category.set(cat_for_click.clone()); sync(); }
+                                        >
+                                            <span>{title2}</span>
+                                            <span class="font-mono text-[10px]">{count2}</span>
+                                        </button>
+                                    }
+                                }).collect::<Vec<_>>()}
+                            </div>
                         </div>
-                    </div>
+                    </Show>
                 </div>
             </aside>
 
@@ -450,7 +529,6 @@ pub fn Icons() -> impl IntoView {
                     </div>
                 </div>
 
-                // MRU strip (client-only, appears after hydration)
                 <Show when=move || hydrated.get() && mru_visible()>
                     <div class="mb-4 flex items-center gap-3 border-b border-border pb-3">
                         <span class="flex-none font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
@@ -459,20 +537,20 @@ pub fn Icons() -> impl IntoView {
                         <div class="flex flex-nowrap gap-2 overflow-x-auto">
                             {move || mru.get().iter().map(|g| {
                                 let glyph = *g;
-                                let select = select_icon;
                                 view! {
                                     <button
                                         type="button"
                                         class="mru-cell"
                                         title=g.kebab_name()
-                                        on:click=move |_| select(glyph)
+                                        on:click=move |_| select_icon(CollectedGlyph {
+                                            name: glyph.name(),
+                                            svg: glyph.svg(),
+                                            viewbox: "0 0 24 24",
+                                            fill: "none",
+                                            stroke: "currentColor",
+                                        })
                                     >
-                                        <Icon
-                                            glyph=Signal::from(glyph)
-                                            size=size_val
-                                            stroke_width=sw_val
-                                            stroke=stroke_val
-                                        />
+                                        <Icon glyph=Signal::from(glyph) size=size_val stroke_width=sw_val stroke=stroke_val />
                                     </button>
                                 }
                             }).collect::<Vec<_>>()}
@@ -483,10 +561,9 @@ pub fn Icons() -> impl IntoView {
                 <div class="grid grid-cols-4 gap-2 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12">
                     <For
                         each=move || filtered_limited.get()
-                        key=|g| *g
+                        key=move |g| format!("{}:{}", collection.get().key(), g.name)
                         children=move |glyph| {
-                            let kebab = glyph.kebab_name();
-                            let name = glyph.name().to_string();
+                            let kebab = glyph.name.to_string();
                             let is_animated = animated;
                             let on_click = select_icon;
                             view! {
@@ -494,28 +571,18 @@ pub fn Icons() -> impl IntoView {
                                     type="button"
                                     class="flex flex-col items-center gap-1.5 rounded-lg border border-border p-2 transition-colors hover:border-ring/40 hover:bg-accent"
                                     on:click=move |_| on_click(glyph)
-                                    title=name.clone()
+                                    title=kebab.clone()
                                 >
                                     <Show
                                         when=move || is_animated.get()
                                         fallback=move || view! {
-                                            <Icon
-                                                glyph=Signal::from(glyph)
-                                                size=size_val
-                                                stroke_width=sw_val
-                                                stroke=stroke_val
-                                            />
+                                            <CustomGlyphView glyph=glyph size=size_val stroke_width=sw_val stroke=stroke_val />
                                         }
                                     >
-                                        <AnimatedIcon
-                                            glyph=Signal::from(glyph)
-                                            size=size_val
-                                            stroke_width=sw_val
-                                            stroke=stroke_val
-                                        />
+                                        <AnimatedGlyphView glyph=glyph size=size_val stroke_width=sw_val stroke=stroke_val />
                                     </Show>
                                     <span class="w-full truncate text-center font-mono text-[9px] text-muted-foreground">
-                                        {kebab}
+                                        {kebab.clone()}
                                     </span>
                                 </button>
                             }
@@ -529,17 +596,25 @@ pub fn Icons() -> impl IntoView {
                 // Detail drawer
                 // -----------------------------------------------------------
                 {move || selected_icon.get().map(|glyph| {
-                    let name = glyph.name().to_string();
-                    let kebab = glyph.kebab_name().to_string();
-                    let svg_markup = full_svg_markup(glyph, size_px.get(), stroke_w.get());
-                    let usage = if animated.get() {
-                        format!(r#"<AnimatedIcon glyph=Glyph::{name} class="w-6 h-6" />"#)
-                    } else {
+                    let name = glyph.name.to_string();
+                    let svg_markup = full_svg_markup(&glyph, size_px.get(), stroke_w.get());
+                    let col = collection.get();
+                    let usage = if col == Collection::Lucide {
                         format!(r#"<Icon glyph=Glyph::{name} class="w-6 h-6" />"#)
+                    } else {
+                        format!(
+                            "use montrs_icons::{{CustomIcon, Collection}};\nlet icon = Collection::{}.glyph(\"{}\").unwrap();\n<CustomIcon svg=icon.svg viewbox=icon.viewbox />",
+                            col.label(), glyph.name.to_lowercase()
+                        )
                     };
-                    let cats: Vec<&str> = glyph.categories().collect();
-                    let tags = glyph.tags().collect::<Vec<_>>().join(" • ");
-                    let related = glyph.related(8);
+                    let cats: Vec<String> = if col == Collection::Lucide {
+                        Glyph::by_name(glyph.name).map(|g| g.categories().map(|c| c.to_string()).collect()).unwrap_or_default()
+                    } else { Vec::new() };
+                    let related: Vec<CollectedGlyph> = if col == Collection::Lucide {
+                        Glyph::by_name(glyph.name).map(|g| g.related(8).into_iter().map(|g| CollectedGlyph {
+                            name: g.name(), svg: g.svg(), viewbox: "0 0 24 24", fill: "none", stroke: "currentColor",
+                        }).collect()).unwrap_or_default()
+                    } else { Vec::new() };
                     let has_related = !related.is_empty();
                     let choice = anim_choice;
                     view! {
@@ -547,9 +622,11 @@ pub fn Icons() -> impl IntoView {
                             <div class="p-5">
                                 <div class="flex items-start justify-between">
                                     <div>
-                                        <p class="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">"Icon"</p>
-                                        <h2 class="mt-1 text-lg font-semibold">{formatted_name(&kebab)}</h2>
-                                        <p class="font-mono text-xs text-muted-foreground">{kebab.clone()}</p>
+                                        <p class="font-mono text-[11px] uppercase tracking-wide text-muted-foreground">
+                                            {move || collection.get().label()}
+                                        </p>
+                                        <h2 class="mt-1 text-lg font-semibold">{formatted_name(&name)}</h2>
+                                        <p class="font-mono text-xs text-muted-foreground">{name.clone()}</p>
                                     </div>
                                     <button
                                         type="button"
@@ -565,21 +642,22 @@ pub fn Icons() -> impl IntoView {
                                     <Show
                                         when=move || choice.get() != "off"
                                         fallback=move || view! {
-                                            <Icon glyph=Signal::from(glyph) size="80" stroke_width="2" />
+                                            <CustomGlyphView glyph=glyph size="80" stroke_width="2" stroke=stroke_val />
                                         }
                                     >
-                                        <AnimatedIcon
-                                            glyph=Signal::from(glyph)
+                                        <AnimatedGlyphView
+                                            glyph=glyph
                                             size="80"
                                             stroke_width="2"
+                                            stroke=stroke_val
                                             profile=Signal::derive(move || match choice.get().as_str() {
-                                                "draw" => Some(AnimationProfile::PathDraw),
-                                                "spin" => Some(AnimationProfile::Spin),
-                                                "pulse" => Some(AnimationProfile::Pulse),
-                                                "bounce" => Some(AnimationProfile::Bounce),
-                                                "ping" => Some(AnimationProfile::Ping),
-                                                "shake" => Some(AnimationProfile::Shake),
-                                                "nod" => Some(AnimationProfile::Nod),
+                                                "draw" => Some(montrs_icons::AnimationProfile::PathDraw),
+                                                "spin" => Some(montrs_icons::AnimationProfile::Spin),
+                                                "pulse" => Some(montrs_icons::AnimationProfile::Pulse),
+                                                "bounce" => Some(montrs_icons::AnimationProfile::Bounce),
+                                                "ping" => Some(montrs_icons::AnimationProfile::Ping),
+                                                "shake" => Some(montrs_icons::AnimationProfile::Shake),
+                                                "nod" => Some(montrs_icons::AnimationProfile::Nod),
                                                 _ => None,
                                             })
                                         />
@@ -593,12 +671,6 @@ pub fn Icons() -> impl IntoView {
                                                 <span class="rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">{formatted_name(c)}</span>
                                             }).collect::<Vec<_>>()}
                                         </div>
-                                    }.into_any()
-                                } else { view! {}.into_any() }}
-
-                                {move || if !tags.is_empty() {
-                                    view! {
-                                        <p class="mt-2 text-xs text-muted-foreground">{tags.clone()}</p>
                                     }.into_any()
                                 } else { view! {}.into_any() }}
 
@@ -630,7 +702,7 @@ pub fn Icons() -> impl IntoView {
 
                                 <div class="mt-4 space-y-2">
                                     <div class="flex items-center gap-2 rounded-md border border-border bg-background p-2">
-                                        <code class="flex-1 truncate text-xs">{usage.clone()}</code>
+                                        <code class="max-h-32 flex-1 overflow-y-auto whitespace-pre-wrap text-xs">{usage.clone()}</code>
                                         <CopyButton text=usage.clone() label="Copy" />
                                     </div>
                                     <div>
@@ -639,10 +711,6 @@ pub fn Icons() -> impl IntoView {
                                             <code class="max-h-20 flex-1 overflow-y-auto text-[10px] break-all">{svg_markup.clone()}</code>
                                             <CopyButton text=svg_markup.clone() label="Copy" />
                                         </div>
-                                    </div>
-                                    <div class="flex items-center gap-2 rounded-md border border-border bg-background p-2">
-                                        <code class="flex-1 truncate text-xs">{format!("use montrs_icons::Glyph;")}</code>
-                                        <CopyButton text="use montrs_icons::Glyph;".to_string() label="Copy" />
                                     </div>
                                 </div>
 
@@ -657,9 +725,9 @@ pub fn Icons() -> impl IntoView {
                                                         type="button"
                                                         class="flex items-center justify-center rounded-md border border-border p-1.5 transition-colors hover:border-ring/40 hover:bg-accent"
                                                         on:click=move |_| select(g)
-                                                        title=g.kebab_name()
+                                                        title=g.name
                                                     >
-                                                        <Icon glyph=Signal::from(g) size="18" />
+                                                        <CustomGlyphView glyph=g size="18" stroke_width="1.5" stroke=stroke_val />
                                                     </button>
                                                 }
                                             }).collect::<Vec<_>>()}
@@ -672,5 +740,68 @@ pub fn Icons() -> impl IntoView {
                 })}
             </div>
         </div>
+    }
+}
+
+/// Static render of a glyph (works for Lucide and collection tables).
+#[component]
+fn CustomGlyphView(
+    glyph: CollectedGlyph,
+    #[prop(into)] size: TextProp,
+    #[prop(into)] stroke_width: TextProp,
+    #[prop(into)] stroke: TextProp,
+) -> impl IntoView {
+    let size2 = size.clone();
+    let stroke_ok = move || {
+        let c = stroke.get();
+        if c.is_empty() {
+            glyph.stroke.to_string()
+        } else {
+            c.to_string()
+        }
+    };
+    view! {
+        <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width=move || size.get()
+            height=move || size2.get()
+            viewBox=move || glyph.viewbox
+            fill=move || glyph.fill
+            stroke=move || stroke_ok()
+            stroke-width=move || stroke_width.get()
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            inner_html=move || glyph.svg
+        />
+    }
+}
+
+/// Hover-animated render of a glyph (Lucide or collection table).
+#[component]
+fn AnimatedGlyphView(
+    glyph: CollectedGlyph,
+    #[prop(into)] size: TextProp,
+    #[prop(into)] stroke_width: TextProp,
+    #[prop(into)] stroke: TextProp,
+    #[prop(into, optional)] profile: Signal<Option<montrs_icons::AnimationProfile>>,
+) -> impl IntoView {
+    let stroke_ok = move || {
+        let c = stroke.get();
+        if c.is_empty() {
+            glyph.stroke.to_string()
+        } else {
+            c.to_string()
+        }
+    };
+    view! {
+        <AnimatedSvg
+            svg={TextProp::from(glyph.svg)}
+            viewbox={TextProp::from(glyph.viewbox)}
+            fill={TextProp::from(glyph.fill)}
+            stroke={TextProp::from(move || stroke_ok())}
+            size=size
+            stroke_width=stroke_width
+            profile=profile
+        />
     }
 }

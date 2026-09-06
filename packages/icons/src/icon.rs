@@ -44,9 +44,11 @@ pub fn Icon(
     #[prop(into, optional)] fill: Option<TextProp>,
     #[prop(into, optional)] stroke: Option<TextProp>,
     #[prop(into, optional)] stroke_width: Option<TextProp>,
+    /// Override the view-box (defaults to "0 0 24 24").
+    #[prop(into, optional)] viewbox: Option<TextProp>,
 ) -> impl IntoView {
     let svg = TextProp::from(move || glyph.get().svg());
-    render_svg(svg, class, size, fill, stroke, stroke_width)
+    render_svg(svg, class, size, fill, stroke, stroke_width, viewbox)
 }
 
 #[component]
@@ -57,8 +59,10 @@ pub fn CustomIcon(
     #[prop(into, optional)] fill: Option<TextProp>,
     #[prop(into, optional)] stroke: Option<TextProp>,
     #[prop(into, optional)] stroke_width: Option<TextProp>,
+    /// Override the view-box (defaults to "0 0 24 24").
+    #[prop(into, optional)] viewbox: Option<TextProp>,
 ) -> impl IntoView {
-    render_svg(svg, class, size, fill, stroke, stroke_width)
+    render_svg(svg, class, size, fill, stroke, stroke_width, viewbox)
 }
 
 pub fn render_svg(
@@ -68,6 +72,7 @@ pub fn render_svg(
     fill: Option<TextProp>,
     stroke: Option<TextProp>,
     stroke_width: Option<TextProp>,
+    viewbox: Option<TextProp>,
 ) -> impl IntoView {
     let class = class.unwrap_or_else(|| "".into());
     let size = size.unwrap_or_else(|| DEFAULT_SIZE.into());
@@ -76,6 +81,7 @@ pub fn render_svg(
     let stroke = stroke.unwrap_or_else(|| DEFAULT_STROKE.into());
     let stroke_width =
         stroke_width.unwrap_or_else(|| DEFAULT_STROKE_WIDTH.into());
+    let viewbox = viewbox.unwrap_or_else(|| "0 0 24 24".into());
 
     view! {
         <svg
@@ -83,7 +89,7 @@ pub fn render_svg(
           class=move || class.get()
           width=move || size.get()
           height=move || size2.get()
-          viewBox="0 0 24 24"
+          viewBox=move || viewbox.get()
           fill=move || fill.get()
           stroke=move || stroke.get()
           stroke-width=move || stroke_width.get()

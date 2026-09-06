@@ -33,7 +33,8 @@
 //! Each icon gets a physics-based animation profile on hover.
 //! Requires the `animated` feature flag.
 
-use crate::{glyph::Glyph, icon::DEFAULT_SIZE};
+use crate::glyph::Glyph;
+use crate::icon::{DEFAULT_FILL, DEFAULT_SIZE, DEFAULT_STROKE, DEFAULT_STROKE_WIDTH};
 use leptos::{prelude::*, text_prop::TextProp};
 use montrs_motion::FrameLoop;
 
@@ -50,41 +51,66 @@ pub enum AnimationProfile {
     None,
 }
 
-/// Animated icon component with spring physics on hover.
-///
-/// Sizing: pass Tailwind size utilities via `class` (e.g. `class="w-6 h-6"`)
-/// or the `size` prop (e.g. `size="24"`). The class is applied directly to
-/// the `<svg>` element so CSS width/height override the presentation
-/// attributes, mirroring the behavior of [`crate::icon::Icon`].
-///
-/// Every icon animates on hover: the auto-detected profile maps to a
-/// frame-loop (spin/shake/nod), a CSS keyframe class (pulse/bounce/ping), or
-/// a real-length stroke draw (default), so no glyph is ever left static.
+/// Hover-animated generic SVG. This is the engine `AnimatedIcon` wraps: it
+/// takes raw inner SVG markup so any glyph (Lucide or a collection table) can
+/// animate. `profile` semantics: `None` = default draw animation.
 #[component]
-pub fn AnimatedIcon(
-    #[prop(into)] glyph: Signal<Glyph>,
-    #[prop(into, optional)] class: Option<TextProp>,
-    #[prop(into, optional)] size: Option<TextProp>,
-    #[prop(into, optional)] fill: Option<TextProp>,
-    #[prop(into, optional)] stroke: Option<TextProp>,
-    #[prop(into, optional)] stroke_width: Option<TextProp>,
-    /// Override the auto-detected animation profile (`None` = auto).
+pub fn AnimatedSvg(
+    /// Inner SVG markup (the child elements, without the `<svg>` wrapper).
+    #[prop(into)] svg: TextProp,
+    #[prop(into, optional)] class: TextProp,
+    #[prop(into, optional)] size: TextProp,
+    #[prop(into, optional)] fill: TextProp,
+    #[prop(into, optional)] stroke: TextProp,
+    #[prop(into, optional)] stroke_width: TextProp,
+    /// Defaults to "0 0 24 24".
+    #[prop(into, optional)] viewbox: TextProp,
+    /// Animation profile (`None` = PathDraw).
     #[prop(into, optional)]
     profile: Signal<Option<AnimationProfile>>,
 ) -> impl IntoView {
     let profile = Memo::new(move |_| {
-        profile
-            .get()
-            .unwrap_or_else(|| animation_profile(glyph.get()))
+        profile.get().unwrap_or(AnimationProfile::PathDraw)
     });
 
-    let svg_data = TextProp::from(move || glyph.get().svg());
-    let class_val = class.unwrap_or_else(|| "".into());
-    let size_val = size.unwrap_or_else(|| DEFAULT_SIZE.into());
-    let size2 = size_val.clone();
-    let fill_val = fill.unwrap_or_else(|| "none".into());
-    let stroke_val = stroke.unwrap_or_else(|| "currentColor".into());
-    let sw = stroke_width.unwrap_or_else(|| "1.5".into());
+    let svg_text = svg;
+    let class_val = class;
+    let size_val = size;
+    let fill_val = fill;
+    let stroke_val = stroke;
+    let sw = stroke_width;
+    let viewbox_val = viewbox;
+
+    // Empty props (omitted) fall back to the Lucide defaults.
+    let size_ok = move || {
+        let s = size_val.get();
+        if s.is_empty() {
+            DEFAULT_SIZE.to_string()
+        } else {
+            s.to_string()
+        }
+    };
+    let size2_ok = size_ok.clone();
+    let fill_ok = move || {
+        let s = fill_val.get();
+        if s.is_empty() { "none".to_string() } else { s.to_string() }
+    };
+    let stroke_ok = move || {
+        let s = stroke_val.get();
+        if s.is_empty() { "currentColor".to_string() } else { s.to_string() }
+    };
+    let sw_ok = move || {
+        let s = sw.get();
+        if s.is_empty() {
+            DEFAULT_STROKE_WIDTH.to_string()
+        } else {
+            s.to_string()
+        }
+    };
+    let viewbox_ok = move || {
+        let s = viewbox_val.get();
+        if s.is_empty() { "0 0 24 24".to_string() } else { s.to_string() }
+    };
 
     // Spring animation values
     let scale = RwSignal::new(1.0);
@@ -180,28 +206,72 @@ pub fn AnimatedIcon(
             on:mouseenter=on_enter
             on:mouseleave=on_leave
         >
-            <svg
+<svg
               xmlns="http://www.w3.org/2000/svg"
               class=move || {
                   let extra = css_class.get();
+                  let base = class_val.get();
                   if extra.is_empty() {
-                      class_val.get().to_string()
+                      base.to_string()
                   } else {
-                      format!("{} {}", class_val.get(), extra)
+                      format!("{} {}", base, extra)
                   }
               }
-              width=move || size_val.get()
-              height=move || size2.get()
-              viewBox="0 0 24 24"
-              fill=move || fill_val.get()
-              stroke=move || stroke_val.get()
-              stroke-width=move || sw.get()
+              width=move || size_ok()
+              height=move || size2_ok()
+              viewBox=move || viewbox_ok()
+              fill=move || fill_ok()
+              stroke=move || stroke_ok()
+              stroke-width=move || sw_ok()
               stroke-linecap="round"
               stroke-linejoin="round"
               style=svg_style
-              inner_html=move || svg_data.get()
+              inner_html=move || svg_text.get()
             />
         </span>
+    }
+}
+
+/// Animated icon component for built-in [`Glyph`]s with spring physics on hover.
+///
+/// Sizing: pass Tailwind size utilities via `class` (e.g. `class="w-6 h-6"`)
+/// or the `size` prop (e.g. `size="24"`). The class is applied directly to
+/// the `<svg>` element so CSS width/height override the presentation
+/// attributes, mirroring the behavior of [`crate::icon::Icon`].
+///
+/// Every icon animates on hover: the auto-detected profile maps to a
+/// frame-loop (spin/shake/nod), a CSS keyframe class (pulse/bounce/ping), or
+/// a real-length stroke draw (default), so no glyph is ever left static.
+#[component]
+pub fn AnimatedIcon(
+    #[prop(into)] glyph: Signal<Glyph>,
+    #[prop(into, optional)] class: Option<TextProp>,
+    #[prop(into, optional)] size: Option<TextProp>,
+    #[prop(into, optional)] fill: Option<TextProp>,
+    #[prop(into, optional)] stroke: Option<TextProp>,
+    #[prop(into, optional)] stroke_width: Option<TextProp>,
+    /// Defaults to "0 0 24 24".
+    #[prop(into, optional)] viewbox: Option<TextProp>,
+    /// Override the auto-detected animation profile (`None` = auto).
+    #[prop(into, optional)]
+    profile: Signal<Option<AnimationProfile>>,
+) -> impl IntoView {
+    let resolved = Signal::derive(move || match profile.get() {
+        Some(p) => Some(p),
+        None => Some(animation_profile(glyph.get())),
+    });
+
+    view! {
+        <AnimatedSvg
+            svg={TextProp::from(move || glyph.get().svg())}
+            class={class.unwrap_or_else(|| TextProp::from(""))}
+            size={size.unwrap_or_else(|| TextProp::from(DEFAULT_SIZE))}
+            fill={fill.unwrap_or_else(|| TextProp::from(DEFAULT_FILL))}
+            stroke={stroke.unwrap_or_else(|| TextProp::from(DEFAULT_STROKE))}
+            stroke_width={stroke_width.unwrap_or_else(|| TextProp::from(DEFAULT_STROKE_WIDTH))}
+            viewbox={viewbox.unwrap_or_else(|| TextProp::from("0 0 24 24"))}
+            profile=resolved
+        />
     }
 }
 
