@@ -355,6 +355,117 @@ html {
     animation: float 6s ease-in-out infinite;
   }
 
+  /* Icon hover animations (montrs-icons AnimatedIcon) */
+  @keyframes montrs-pulse {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.4;
+    }
+  }
+
+  @keyframes montrs-bounce {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-22%);
+    }
+  }
+
+  @keyframes montrs-ping {
+    75%,
+    100% {
+      transform: scale(1.8);
+      opacity: 0;
+    }
+  }
+
+  .montrs-pulse {
+    animation: montrs-pulse 1.4s ease-in-out infinite;
+  }
+
+  .montrs-bounce {
+    animation: montrs-bounce 1s ease infinite;
+  }
+
+  .montrs-ping {
+    animation: montrs-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+
+  /* Icons page: sidebar, sliders, drawer, MRU */
+  .icons-sidebar {
+    width: 16rem;
+    flex: none;
+    border-right: 1px solid hsl(var(--border));
+  }
+
+  .icons-sidebar-section {
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 1rem;
+  }
+
+  .icons-sidebar-heading {
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: hsl(var(--muted-foreground));
+  }
+
+  .icon-range {
+    width: 100%;
+    accent-color: hsl(var(--primary));
+  }
+
+  .icon-drawer {
+    position: fixed;
+    top: 4rem;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    width: 26rem;
+    max-width: 100vw;
+    border-left: 1px solid hsl(var(--border));
+    background-color: hsl(var(--card));
+    box-shadow: -12px 0 40px hsl(var(--foreground) / 0.08);
+    transform: translateX(100%);
+    transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow-y: auto;
+  }
+
+  .icon-drawer.open {
+    transform: translateX(0);
+  }
+
+  .mru-cell {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border: 1px solid hsl(var(--border));
+    border-radius: 0.5rem;
+    color: hsl(var(--muted-foreground));
+    cursor: pointer;
+    transition:
+      border-color 0.15s ease,
+      background-color 0.15s ease,
+      color 0.15s ease;
+  }
+
+  .mru-cell:hover {
+    border-color: hsl(var(--ring) / 0.4);
+    background-color: hsl(var(--accent));
+    color: hsl(var(--foreground));
+  }
+
   /* Gradient text for hero accents */
   .text-gradient {
     background: linear-gradient(

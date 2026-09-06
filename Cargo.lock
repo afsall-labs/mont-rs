@@ -4543,6 +4543,8 @@ dependencies = [
  "montrs-motion",
  "strum",
  "strum_macros",
+ "wasm-bindgen",
+ "web-sys",
 ]
 
 [[package]]

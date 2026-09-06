@@ -1,4 +1,4 @@
-// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
+﻿// بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيم
 // This file is part of montrs.
 // Copyright (C) 2026-Present Afsall Inc.
 // SPDX-License-Identifier: Apache-2.0 OR MIT
@@ -45,6 +45,8 @@ pub enum AnimationProfile {
     Shake,
     Spin,
     Nod,
+    Bounce,
+    Ping,
     None,
 }
 
@@ -54,6 +56,10 @@ pub enum AnimationProfile {
 /// or the `size` prop (e.g. `size="24"`). The class is applied directly to
 /// the `<svg>` element so CSS width/height override the presentation
 /// attributes, mirroring the behavior of [`crate::icon::Icon`].
+///
+/// Every icon animates on hover: the auto-detected profile maps to a
+/// frame-loop (spin/shake/nod), a CSS keyframe class (pulse/bounce/ping), or
+/// a real-length stroke draw (default), so no glyph is ever left static.
 #[component]
 pub fn AnimatedIcon(
     #[prop(into)] glyph: Signal<Glyph>,
@@ -84,109 +90,75 @@ pub fn AnimatedIcon(
     let scale = RwSignal::new(1.0);
     let rotate = RwSignal::new(0.0);
     let translate_y = RwSignal::new(0.0);
-    let path_offset = RwSignal::new(0.0);
     let is_spinning = RwSignal::new(false);
+    // CSS keyframe class applied on hover (pulse / bounce / ping).
+    let css_class = RwSignal::new("");
 
-    let on_enter = {
-        let p = profile;
-        let s = scale;
-        let r = rotate;
-        let ty = translate_y;
-        let po = path_offset;
-        let spin = is_spinning;
-        move |_: leptos::ev::MouseEvent| {
-            match p.get() {
-                AnimationProfile::Pulse => {
-                    s.set(1.15);
-                    // Spring back
-                    let s2 = s;
-                    FrameLoop::on_frame(move || {
-                        let current: f64 = s2.get();
-                        let next: f64 = current + (1.0 - current) * 0.15;
-                        s2.set(next);
-                        (next - 1.0).abs() > 0.01
-                    });
-                }
-                AnimationProfile::Shake => {
-                    spin.set(true);
-                    let r2 = r;
-                    let spin2 = spin;
-                    let start = FrameLoop::now();
-                    FrameLoop::on_frame(move || {
-                        let elapsed = FrameLoop::now() - start;
-                        if elapsed > 0.5 || !spin2.get() {
-                            return false;
-                        }
-                        let angle = (elapsed * 40.0).sin() * 10.0;
-                        r2.set(angle);
-                        true
-                    });
-                }
-                AnimationProfile::Spin => {
-                    spin.set(true);
-                    let r2 = r;
-                    let spin2 = spin;
-                    let start = FrameLoop::now();
-                    FrameLoop::on_frame(move || {
-                        if !spin2.get() {
-                            return false;
-                        }
-                        let elapsed = FrameLoop::now() - start;
-                        r2.set((elapsed * 360.0 * 1.5) % 360.0);
-                        true
-                    });
-                }
-                AnimationProfile::Nod => {
-                    ty.set(-4.0);
-                    let ty2 = ty;
-                    FrameLoop::on_frame(move || {
-                        let current: f64 = ty2.get();
-                        let next: f64 = current + (0.0 - current) * 0.2;
-                        ty2.set(next);
-                        next.abs() > 0.1
-                    });
-                }
-                AnimationProfile::PathDraw => {
-                    po.set(100.0);
-                    let po2 = po;
-                    FrameLoop::on_frame(move || {
-                        let current = po2.get();
-                        let next = current - 2.0;
-                        if next <= 0.0 {
-                            po2.set(0.0);
-                            return false;
-                        }
-                        po2.set(next);
-                        true
-                    });
-                }
-                AnimationProfile::None => {}
+    let on_enter = move |ev: leptos::ev::MouseEvent| {
+        match profile.get() {
+            AnimationProfile::Pulse => css_class.set("montrs-pulse"),
+            AnimationProfile::Bounce => css_class.set("montrs-bounce"),
+            AnimationProfile::Ping => css_class.set("montrs-ping"),
+            AnimationProfile::Spin => {
+                is_spinning.set(true);
+                let start = FrameLoop::now();
+                FrameLoop::on_frame(move || {
+                    if !is_spinning.get() {
+                        return false;
+                    }
+                    let elapsed = FrameLoop::now() - start;
+                    rotate.set((elapsed * 360.0 * 1.5) % 360.0);
+                    true
+                });
             }
+            AnimationProfile::Shake => {
+                is_spinning.set(true);
+                let start = FrameLoop::now();
+                FrameLoop::on_frame(move || {
+                    let elapsed = FrameLoop::now() - start;
+                    if elapsed > 0.6 || !is_spinning.get() {
+                        return false;
+                    }
+                    rotate.set((elapsed * 40.0).sin() * 10.0);
+                    true
+                });
+            }
+            AnimationProfile::Nod => {
+                translate_y.set(-4.0);
+                FrameLoop::on_frame(move || {
+                    let current: f64 = translate_y.get();
+                    let next: f64 = current + (0.0 - current) * 0.2;
+                    translate_y.set(next);
+                    next.abs() > 0.1
+                });
+            }
+            AnimationProfile::PathDraw => {
+                if let Some(svg) = resolve_svg(&ev) {
+                    draw_svg(&svg, 350, 0);
+                }
+            }
+            AnimationProfile::None => {}
         }
     };
 
-    let on_leave = {
-        let s = scale;
-        let r = rotate;
-        let ty = translate_y;
-        let po = path_offset;
-        let spin = is_spinning;
-        move |_: leptos::ev::MouseEvent| {
-            spin.set(false);
-            s.set(1.0);
-            r.set(0.0);
-            ty.set(0.0);
-            po.set(0.0);
+    let on_leave = move |ev: leptos::ev::MouseEvent| {
+        css_class.set("");
+        is_spinning.set(false);
+        scale.set(1.0);
+        rotate.set(0.0);
+        translate_y.set(0.0);
+        if profile.get() == AnimationProfile::PathDraw
+            && let Some(svg) = resolve_svg(&ev)
+        {
+            reset_draw(&svg);
         }
     };
 
-    // Per-frame style lives on the `<svg>`: transform + the SVG stroke
-    // properties (dasharray/dashoffset) must target the `<svg>` (or its
-    // children) directly. A CSS transition smooths the spring-out but would
-    // add lag to continuous spin/shake, so it is only applied while idle.
+    // Per-frame transform lives on the `<svg>`; CSS keyframe classes
+    // (pulse/bounce/ping) are layered on top via the class attribute.
     let svg_style = move || {
         let mut styles = format!(
-            "transform: scale({}) rotate({}deg) translateY({}px); \
+            "transform: scale({}) rotate({})deg translateY({}px); \
              transform-origin: center;",
             scale.get(),
             rotate.get(),
@@ -196,15 +168,8 @@ pub fn AnimatedIcon(
             styles.push_str(" transition: none;");
         } else {
             styles.push_str(
-                " transition: transform 0.35s cubic-bezier(0.16,1,0.3,1), \
-                 stroke-dashoffset 0.12s linear;",
+                " transition: transform 0.35s cubic-bezier(0.16,1,0.3,1);",
             );
-        }
-        if profile.get() == AnimationProfile::PathDraw {
-            styles.push_str(&format!(
-                " stroke-dasharray: 100; stroke-dashoffset: {};",
-                path_offset.get()
-            ));
         }
         styles
     };
@@ -217,7 +182,14 @@ pub fn AnimatedIcon(
         >
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              class=move || class_val.get()
+              class=move || {
+                  let extra = css_class.get();
+                  if extra.is_empty() {
+                      class_val.get().to_string()
+                  } else {
+                      format!("{} {}", class_val.get(), extra)
+                  }
+              }
               width=move || size_val.get()
               height=move || size2.get()
               viewBox="0 0 24 24"
@@ -230,6 +202,135 @@ pub fn AnimatedIcon(
               inner_html=move || svg_data.get()
             />
         </span>
+    }
+}
+
+/// Resolve the `<svg>` element from a mouse event by walking up the DOM from
+/// the event target (avoids needing a typed NodeRef for the SVG namespace).
+#[allow(unused_variables)]
+fn resolve_svg(ev: &leptos::ev::MouseEvent) -> Option<web_sys::SvgElement> {
+    #[cfg(target_arch = "wasm32")]
+    {
+        use wasm_bindgen::JsCast;
+        let mut node = ev.target().and_then(|t| t.dyn_into::<web_sys::Node>().ok());
+        while let Some(n) = node.clone() {
+            if let Ok(el) = n.clone().dyn_into::<web_sys::Element>() {
+                if el.tag_name().eq_ignore_ascii_case("svg") {
+                    return el.dyn_into::<web_sys::SvgElement>().ok();
+                }
+            }
+            node = n.parent_element().map(|e| e.into());
+        }
+    }
+    let _ = ev;
+    None
+}
+
+/// Stroke-draw animation using the browser-measured path lengths (lepticons'
+/// approach): frame 1 hides every geometry element by setting its own
+/// `stroke-dasharray`/`dashoffset`, frame 2 enables the transition and draws
+/// to 0. Works on any stroke-based glyph, so no icon is left unanimated.
+#[allow(unused_variables)]
+fn draw_svg(svg: &web_sys::SvgElement, duration_ms: u32, delay_ms: u32) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        use wasm_bindgen::prelude::Closure;
+        use wasm_bindgen::JsCast;
+
+        let svg: web_sys::Element = svg.clone().into();
+        // Apply per-element measured dash lengths (hides every stroke).
+        apply_measured_lengths(&svg);
+
+        // Frame 1: also mark them static.
+        let svg_frame1 = svg.clone();
+        let closure1 = Closure::wrap(Box::new(move || {
+            set_geometry_state(&svg_frame1, |style| {
+                let _ = style.set_property("transition", "none");
+            });
+            // Frame 2: enable the transition and draw to visible.
+            if let Some(win) = web_sys::window() {
+                let svg_frame2 = svg_frame1.clone();
+                let closure2 = Closure::wrap(Box::new(move || {
+                    set_geometry_state(&svg_frame2, |style| {
+                        let _ = style.set_property(
+                            "transition",
+                            &format!(
+                                "stroke-dashoffset {duration_ms}ms ease-in-out \
+                                 {delay_ms}ms"
+                            ),
+                        );
+                        let _ = style.set_property("stroke-dashoffset", "0");
+                    });
+                }) as Box<dyn FnMut()>);
+                let _ = win.request_animation_frame(closure2.as_ref().unchecked_ref());
+                closure2.forget();
+            }
+        }) as Box<dyn FnMut()>);
+        if let Some(win) = web_sys::window() {
+            let _ = win.request_animation_frame(closure1.as_ref().unchecked_ref());
+        }
+        closure1.forget();
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn set_geometry_state<F: Fn(&web_sys::CssStyleDeclaration)>(svg: &web_sys::Element, f: F) {
+    use wasm_bindgen::JsCast;
+    let children = svg.children();
+    for i in 0..children.length() {
+        let Some(child) = children.item(i) else {
+            continue;
+        };
+        if child.dyn_ref::<web_sys::SvgGeometryElement>().is_none() {
+            continue;
+        }
+        let child: web_sys::SvgElement = child.unchecked_into();
+        f(&child.style());
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+fn apply_measured_lengths(svg: &web_sys::Element) {
+    use wasm_bindgen::JsCast;
+    let children = svg.children();
+    for i in 0..children.length() {
+        let Some(child) = children.item(i) else {
+            continue;
+        };
+        if child.dyn_ref::<web_sys::SvgGeometryElement>().is_none() {
+            continue;
+        }
+        let geom: web_sys::SvgGeometryElement = child.clone().unchecked_into();
+        let len: f32 = geom.get_total_length();
+        if len <= 0.0 {
+            continue;
+        }
+        let svg_el: web_sys::SvgElement = child.unchecked_into();
+        let style = svg_el.style();
+        let _ = style.set_property("stroke-dasharray", &len.to_string());
+        let _ = style.set_property("stroke-dashoffset", &len.to_string());
+    }
+}
+
+/// Restore default stroke styling after a draw animation.
+#[allow(unused_variables)]
+fn reset_draw(svg: &web_sys::SvgElement) {
+    #[cfg(target_arch = "wasm32")]
+    {
+        use wasm_bindgen::JsCast;
+        let svg: web_sys::Element = svg.clone().into();
+        let children = svg.children();
+        for i in 0..children.length() {
+            if let Some(child) = children.item(i) {
+                if child.dyn_ref::<web_sys::SvgGeometryElement>().is_some() {
+                    let child: web_sys::SvgElement = child.unchecked_into();
+                    let style = child.style();
+                    let _ = style.remove_property("stroke-dasharray");
+                    let _ = style.remove_property("stroke-dashoffset");
+                    let _ = style.remove_property("transition");
+                }
+            }
+        }
     }
 }
 
@@ -246,7 +347,15 @@ pub fn animation_profile(glyph: Glyph) -> AnimationProfile {
     {
         return AnimationProfile::Spin;
     }
-    if name.contains("Heart") || name.contains("Thumbs") || name == "Activity" {
+    if name.contains("Heart")
+        || name.contains("Thumbs")
+        || name.contains("Activity")
+        || name.contains("Wifi")
+        || name.contains("Signal")
+        || name.contains("Radio")
+        || name.contains("Rss")
+        || name.contains("Antenna")
+    {
         return AnimationProfile::Pulse;
     }
     if name.contains("Bell")
@@ -257,10 +366,26 @@ pub fn animation_profile(glyph: Glyph) -> AnimationProfile {
     {
         return AnimationProfile::Shake;
     }
+    if name.contains("Arrow")
+        || name.contains("Chevron")
+        || name.contains("Move")
+        || name.contains("Mouse")
+        || name.contains("Hand")
+    {
+        return AnimationProfile::Bounce;
+    }
+    if name.contains("Radar")
+        || name.contains("MapPin")
+        || name.contains("Anchor")
+        || name.contains("Target")
+        || name.contains("Locate")
+    {
+        return AnimationProfile::Ping;
+    }
     if name.contains("Search")
         || name.contains("Navigation")
         || name.contains("Compass")
-        || name.contains("Locate")
+        || name.contains("Crosshair")
     {
         return AnimationProfile::Nod;
     }
